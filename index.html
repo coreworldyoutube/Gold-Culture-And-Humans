@@ -20,6 +20,7 @@ button:hover:not(:disabled){filter:brightness(1.15);transform:translateY(-1px)}b
 .big{width:100%;padding:18px;font-size:19px;min-height:92px}.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}
 .muted{color:var(--muted)}.hint{font-size:12px;color:var(--muted);margin:8px 0 0}
 .progress{height:9px;background:#0e141c;border-radius:99px;overflow:hidden;margin:8px 0}.progress span{display:block;height:100%;background:linear-gradient(90deg,#c18b27,#f4d16b);width:0%}
+.exchange-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}.exchange-row input{width:110px;background:#0e141c;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px}.exchange-info{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}
 .resource-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
 .resource{display:flex;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:8px;background:#111923;border:1px solid #2d3948}
 .mine{padding:10px;border-radius:9px;background:#111923;border:1px solid #344254;margin-top:8px}
@@ -75,6 +76,23 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:18px}
         <button id="buyPower">行政機関を建設 — 150</button>
       </div>
       <p class="hint">税制を導入すると、労働者から毎秒税収を得る。行政機関は国力を増やす。</p>
+      <h3>国力の回復</h3>
+      <div class="exchange-info">
+        <div class="resource"><span>政治負担</span><strong id="burden">0</strong></div>
+        <div class="resource"><span>国力不足</span><strong id="powerShortage">0</strong></div>
+      </div>
+      <p class="hint">国力は保有する国家能力です。設備購入などでは消費されません。通貨100で国力1を回復できます。</p>
+      <div class="exchange-row">
+        <label for="powerAmount">回復する国力</label>
+        <input id="powerAmount" type="number" min="1" step="1" value="1">
+        <button id="recoverPower" class="primary">国力を回復</button>
+      </div>
+      <div class="actions">
+        <button id="recoverOne">+1 回復</button>
+        <button id="recoverTen">+10 回復</button>
+        <button id="recoverMax">可能な最大量</button>
+      </div>
+      <p class="hint" id="recoveryPreview">必要通貨：100</p>
     </div>
 
     <div class="panel">
@@ -113,7 +131,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:18px}
       <p class="hint">このブラウザのLocalStorageに自動保存される。</p>
     </div>
   </section>
-  <footer>金クリッカー prototype 0.1 · ブラウザ保存対応</footer>
+  <footer>金クリッカー prototype 0.2 · 国力回復対応 · ブラウザ保存対応</footer>
 </main>
 <script>
 (() => {
@@ -125,13 +143,14 @@ const pool = [
  ["金",12],["鉄",22],["銅",16],["鉛",10],["タングステン",5],["錫",10],
  ["石油",8],["ダイヤモンド",3],["琥珀",4],["銀",5],["石英",5]
 ];
-const fresh = () => ({money:0,gold:0,bread:0,workers:0,ovens:0,tax:false,admins:0,power:0,
+const POWER_RECOVERY_COST = 100; // 通貨100 = 国力1（調整可能な仮設定）
+const fresh = () => ({schemaVersion:2,money:0,gold:0,bread:0,workers:0,ovens:0,tax:false,admins:0,power:100,politicalBurden:0,
  resources:Object.fromEntries(resourceNames.map(n=>[n,0])),mines:[],totalMined:0,mineCost:250,log:[]});
 let s = fresh();
 function fmt(n){return Math.floor(n).toLocaleString("ja-JP");}
 function note(t){s.log.unshift(new Date().toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"})+" "+t);s.log=s.log.slice(0,35);}
 function save(silent=false){localStorage.setItem("goldClickerSave",JSON.stringify(s));if(!silent)note("ゲームをセーブした。");render();}
-function load(){try{const raw=localStorage.getItem("goldClickerSave");if(raw){const d=JSON.parse(raw);s={...fresh(),...d,resources:{...fresh().resources,...d.resources}};}}catch(e){console.warn(e);}}
+function load(){try{const raw=localStorage.getItem("goldClickerSave");if(raw){const d=JSON.parse(raw);s={...fresh(),...d,resources:{...fresh().resources,...d.resources}};if(!d.schemaVersion||d.schemaVersion<2){s.power=Math.max(100,Number(d.power)||0);s.politicalBurden=Number(d.politicalBurden)||0;s.schemaVersion=2;}}}catch(e){console.warn(e);}}
 function weightedPick(){let total=pool.reduce((a,x)=>a+x[1],0),r=Math.random()*total;for(const [n,w] of pool){r-=w;if(r<=0)return n;}return "鉄";}
 function mineChance(){return pool.map(([n,w])=>`${n} ${w}%`).join(" / ");}
 function bake(n=1){s.bread+=n;render();}
@@ -141,6 +160,13 @@ function mineOne(m){if(m.remaining<=0||m.rate<=0)return;const amount=Math.min(m.
 function render(){
  $("money").textContent=fmt(s.money);$("gold").textContent=fmt(s.gold)+" g";$("bread").textContent=fmt(s.bread);
  $("workers").textContent=fmt(s.workers);$("power").textContent=fmt(s.power);
+ const shortage=Math.max(0,s.politicalBurden-s.power);
+ $("burden").textContent=fmt(s.politicalBurden);$("powerShortage").textContent=fmt(shortage);
+ const recoveryAmount=Math.max(1,Math.floor(Number($("powerAmount").value)||1));
+ $("recoveryPreview").textContent=`必要通貨：${fmt(recoveryAmount*POWER_RECOVERY_COST)}（現在の所持通貨で${fmt(Math.floor(s.money/POWER_RECOVERY_COST))}まで回復可能）`;
+ $("recoverPower").disabled=s.money<recoveryAmount*POWER_RECOVERY_COST;
+ $("recoverOne").disabled=s.money<POWER_RECOVERY_COST;$("recoverTen").disabled=s.money<10*POWER_RECOVERY_COST;
+ $("recoverMax").disabled=s.money<POWER_RECOVERY_COST;
  const tax=s.tax?s.workers*.8:0;const upkeep=s.workers*.35;
  $("income").textContent=(tax>0?"+":"")+((tax-upkeep).toFixed(1))+" / 秒";
  $("ovenCost").textContent=fmt(25*Math.pow(1.35,s.ovens));$("workerCost").textContent=fmt(40*Math.pow(1.22,s.workers));
@@ -168,6 +194,12 @@ $("buyPower").onclick=()=>{const c=Math.ceil(150*Math.pow(1.5,s.admins));if(buy(
 $("explore").onclick=()=>{if(!buy(s.mineCost))return;const type=weightedPick();const capacity=Math.floor((type==="金"?35:type==="鉄"?180:type==="銅"?130:100)*(0.7+Math.random()*.8));const rate=type==="金"?.7:.9+Math.random()*.8;const m={type,capacity,remaining:capacity,rate};s.mines.push(m);s.mineCost=Math.ceil(s.mineCost*1.65);note(`${type}鉱山を発見した！ 埋蔵量${capacity}。`);render();};
 $("sellGold").onclick=()=>{if(s.gold>=1){s.gold--;s.money+=prices["金"];note("金1 gを売却し、通貨80を得た。");render();}};
 $("sellAllGold").onclick=()=>{const n=Math.floor(s.gold);if(n>0){s.gold-=n;s.money+=n*prices["金"];note(`金${n} gを売却し、通貨${fmt(n*prices["金"])}を得た。`);render();}};
+function recoverPower(amount){amount=Math.floor(Number(amount));if(!Number.isFinite(amount)||amount<1)return;const cost=amount*POWER_RECOVERY_COST;if(s.money<cost){note("通貨が足りないため、国力を回復できなかった。");render();return;}s.money-=cost;s.power+=amount;note(`通貨${fmt(cost)}を使い、国力を${fmt(amount)}回復した。`);render();}
+$("powerAmount").addEventListener("input",()=>{const v=Math.floor(Number($("powerAmount").value));$("recoverPower").disabled=!Number.isFinite(v)||v<1||s.money<v*POWER_RECOVERY_COST;$("recoveryPreview").textContent=v>0?`必要通貨：${fmt(v*POWER_RECOVERY_COST)}（現在の所持通貨で${fmt(Math.floor(s.money/POWER_RECOVERY_COST))}まで回復可能）`:"1以上の整数を入力してください。";});
+$("recoverPower").onclick=()=>recoverPower($("powerAmount").value);
+$("recoverOne").onclick=()=>recoverPower(1);
+$("recoverTen").onclick=()=>recoverPower(10);
+$("recoverMax").onclick=()=>recoverPower(Math.floor(s.money/POWER_RECOVERY_COST));
 $("save").onclick=()=>save();
 $("reset").onclick=()=>{if(confirm("セーブデータを消して最初から始めますか？")){localStorage.removeItem("goldClickerSave");s=fresh();note("新しい文明が始まった。");render();}};
 let ticks=0;
