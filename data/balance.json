@@ -94,16 +94,16 @@
     "ボーキサイト": 1
   },
   "mineDiscoveryWeights": [
-    { "resource": "金", "weight": 10 },
-    { "resource": "鉄", "weight": 20 },
-    { "resource": "銅", "weight": 15 },
+    { "resource": "金", "weight": 25 },
+    { "resource": "鉄", "weight": 9 },
+    { "resource": "銅", "weight": 7 },
     { "resource": "鉛", "weight": 8 },
     { "resource": "タングステン", "weight": 4 },
     { "resource": "錫", "weight": 9 },
     { "resource": "石油", "weight": 8 },
-    { "resource": "ダイヤモンド", "weight": 2 },
-    { "resource": "琥珀", "weight": 4 },
-    { "resource": "銀", "weight": 4 },
+    { "resource": "ダイヤモンド", "weight": 13 },
+    { "resource": "琥珀", "weight": 10 },
+    { "resource": "銀", "weight": 19 },
     { "resource": "石英", "weight": 6 },
     { "resource": "石炭", "weight": 8 },
     { "resource": "ボーキサイト", "weight": 2 }
