@@ -301,7 +301,7 @@ function simulate(seconds){sanitizeState();const rawDt=Number(seconds),dt=Number
  s.money=Math.max(0,s.money-s.workers*BALANCE.worker.upkeepPerSecond*dt);
  s.power+=(s.admins*BALANCE.administration.powerRecoveryPerSecond+(s.goods["発電機"]||0)*BALANCE.generator.powerRecoveryPerSecondPerUnit)*dt;
  const machineBonus=1+(s.goods["蒸気機関"]||0)*BALANCE.mine.steamEngineMiningRateBonusPerUnit;
- for(const m of s.mines){if(m.remaining>0){const mined=Math.min(m.rate*efficiency*machineBonus*dt,m.remaining);m.remaining=Math.max(0,m.remaining-mined);s.resources[m.type]=(s.resources[m.type]||0)+mined;s.totalMined+=mined;if(m.type==="金")s.gold+=mined;}}
+ for(const m of s.mines){if(m.remaining>0){const mined=Math.min(m.rate*efficiency*machineBonus*dt,m.remaining);m.remaining=Math.max(0,m.remaining-mined);if(m.type==="金")s.gold+=mined;else s.resources[m.type]=(s.resources[m.type]||0)+mined;s.totalMined+=mined;}}
 }
 let ticks=0;
 load();note("ゲームを開始した。まずはパンを作って売ろう。");render();
