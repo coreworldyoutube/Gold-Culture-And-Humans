@@ -37,6 +37,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:18px}
 <header>
   <h1>金クリッカー</h1>
   <p>パン屋から始めて、資源と産業を育て、文明を宇宙へ。</p>
+  <div class="actions" style="justify-content:center"><button id="reset">最初から</button></div>
 </header>
 <main>
   <section class="stats">
@@ -149,7 +150,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:18px}
     <div class="panel">
       <h2>📜 国家の記録</h2>
       <div class="log" id="log" aria-live="polite"><div>文明の歴史がここに記録される。</div></div>
-      <div class="actions"><button id="save">セーブ</button><button id="reset">最初から</button></div>
+      <div class="actions"><button id="save">セーブ</button></div>
       <p class="hint">このブラウザのLocalStorageに自動保存される。</p>
     </div>
   </section>
@@ -203,7 +204,18 @@ const technologies = [
 const fresh = () => ({schemaVersion:4,lastSavedAt:Date.now(),money:0,gold:0,bread:0,workers:0,ovens:0,tax:false,admins:0,power:100,politicalBurden:0,goods:Object.fromEntries(productNames.map(n=>[n,0])),researched:[],rocketsLaunched:0,
  resources:Object.fromEntries(resourceNames.map(n=>[n,0])),mines:[],totalMined:0,mineCost:250,log:[]});
 let s = fresh();
-function fmt(n){return Math.floor(n).toLocaleString("ja-JP");}
+function finiteNonnegative(value,fallback=0){const n=Number(value);return Number.isFinite(n)&&n>=0?n:fallback;}
+function sanitizeState(){
+ for(const key of ["money","gold","bread","workers","ovens","admins","power","politicalBurden","totalMined","mineCost","rocketsLaunched"])s[key]=finiteNonnegative(s[key],key==="power"?100:0);
+ s.resources=Object.fromEntries(resourceNames.map(n=>[n,finiteNonnegative(s.resources?.[n])]));
+ s.goods=Object.fromEntries(productNames.map(n=>[n,finiteNonnegative(s.goods?.[n])]));
+ s.mines=(Array.isArray(s.mines)?s.mines:[]).filter(m=>m&&resourceNames.includes(m.type)).map(m=>{const capacity=finiteNonnegative(m.capacity);return {...m,capacity,remaining:Math.min(capacity,finiteNonnegative(m.remaining)),rate:finiteNonnegative(m.rate)};}).filter(m=>m.capacity>0);
+ s.researched=(Array.isArray(s.researched)?s.researched:[]).filter(id=>Object.prototype.hasOwnProperty.call(technologyNames,id));
+ s.rocketsLaunched=finiteNonnegative(s.rocketsLaunched);
+ s.log=(Array.isArray(s.log)?s.log:[]).filter(x=>typeof x==="string").slice(0,35);
+ if(typeof s.tax!=="boolean")s.tax=Boolean(s.tax);
+}
+function fmt(n){const value=Number(n);return Math.floor(Number.isFinite(value)?value:0).toLocaleString("ja-JP");}
 function note(t){s.log.unshift(new Date().toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"})+" "+t);s.log=s.log.slice(0,35);}
 function save(silent=false){if(!silent)note("ゲームをセーブした。");s.lastSavedAt=Date.now();try{localStorage.setItem("goldClickerSave",JSON.stringify(s));}catch(e){note("保存に失敗した。ブラウザの保存容量を確認してください。");console.warn(e);}render();}
 function load(){try{const raw=localStorage.getItem("goldClickerSave");if(!raw)return;const d=JSON.parse(raw);if(!d||typeof d!=="object")throw new Error("セーブデータの形式が不正です");s={...fresh(),...d,resources:{...fresh().resources,...(d.resources||{})},goods:{...fresh().goods,...(d.goods||{})},researched:Array.isArray(d.researched)?d.researched:[],mines:Array.isArray(d.mines)?d.mines:[],log:Array.isArray(d.log)?d.log:[]};if(!d.schemaVersion||d.schemaVersion<2){s.power=Math.max(100,Number(d.power)||0);s.politicalBurden=Number(d.politicalBurden)||0;}s.schemaVersion=4;const elapsed=Math.max(0,Math.min(28800,(Date.now()-(Number(d.lastSavedAt)||Date.now()))/1000));if(elapsed>=1){simulate(elapsed);note("留守中の"+fmt(elapsed)+"秒分、生産を進めた。");}save(true);}catch(e){console.warn(e);note("セーブデータを読み込めなかったため、新しい状態で開始した。");s=fresh();}}
@@ -227,6 +239,7 @@ function renderIndustry(){
 function craftRecipe(index){const r=recipes[index];if(!r||!s.researched.includes(r.tech)||!payCost({raw:r.raw||{},goods:r.goods||{}}))return;for(const [k,n] of Object.entries(r.out))s.goods[k]=(s.goods[k]||0)+n;note(r.name+"を製造した。");render();}
 function researchTech(id){const t=technologies.find(x=>x.id===id);if(!t||s.researched.includes(id)||(t.requires||[]).some(x=>!s.researched.includes(x))||!payCost(t.cost))return;s.researched.push(id);note("技術研究を完了："+technologyNames[id]+"。");render();}
 function render(){
+ sanitizeState();
  $("money").textContent=fmt(s.money);$("gold").textContent=fmt(s.gold)+" g";$("bread").textContent=fmt(s.bread);
  $("workers").textContent=fmt(s.workers);$("power").textContent=fmt(s.power);
  const shortage=Math.max(0,s.politicalBurden-s.power);
@@ -279,7 +292,7 @@ $("recoverTen").onclick=()=>recoverPower(10);
 $("recoverMax").onclick=()=>recoverPower(Math.floor(s.money/POWER_RECOVERY_COST));
 $("save").onclick=()=>save();
 $("reset").onclick=()=>{if(confirm("セーブデータを消して最初から始めますか？")){localStorage.removeItem("goldClickerSave");s=fresh();note("新しい文明が始まった。");render();}};
-function simulate(seconds){const dt=Math.max(0,Number(seconds)||0);if(!dt)return;
+function simulate(seconds){sanitizeState();const rawDt=Number(seconds),dt=Number.isFinite(rawDt)?Math.max(0,rawDt):0;if(!dt)return;
  const burden=s.workers*2+s.ovens+s.admins*4+s.mines.filter(m=>m.remaining>0).length*10;
  s.politicalBurden=burden;
  const shortage=Math.max(0,burden-s.power);
