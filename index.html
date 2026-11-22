@@ -52,7 +52,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:18px}
   <section class="columns">
     <div class="panel">
       <h2>🥖 パン屋</h2>
-      <button class="big primary" id="bake">🥖 パンを作る <small>(+1)</small></button>
+      <button class="big primary" id="bake">🥖 パンを作る <small id="bakeAmount">(+1)</small></button>
       <div class="actions">
         <button id="sellBread">パンを10個売る</button>
         <button id="sellAllBread">パンを全部売る</button>
@@ -75,8 +75,8 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:18px}
         <div class="resource"><span>国家段階</span><strong id="era">村落</strong></div>
       </div>
       <div class="actions">
-        <button id="buyTax">税制を導入 — 100</button>
-        <button id="buyPower">行政機関を建設 — 150</button>
+        <button id="buyTax">税制を導入 — <span id="taxCost">100</span></button>
+        <button id="buyPower">行政機関を建設 — <span id="adminCost">150</span></button>
       </div>
       <p class="hint">税制を導入すると、労働者から毎秒税収を得る。行政機関は国力を増やす。</p>
       <h3>国力の回復</h3>
@@ -84,7 +84,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:18px}
         <div class="resource"><span>政治負担</span><strong id="burden">0</strong></div>
         <div class="resource"><span>国力不足</span><strong id="powerShortage">0</strong></div>
       </div>
-      <p class="hint">人口・施設・鉱山が政治負担を増やします。負担が国力を超えると生産効率が下がります。通貨100で国力1を回復できます。</p>
+      <p class="hint" id="powerHint">人口・施設・鉱山が政治負担を増やします。負担が国力を超えると生産効率が下がります。</p>
       <div class="exchange-row">
         <label for="powerAmount">回復する国力</label>
         <input id="powerAmount" type="number" min="1" step="1" value="1">
@@ -211,7 +211,7 @@ function load(){try{const raw=localStorage.getItem("goldClickerSave");if(!raw)re
 function weightedPick(){let total=pool.reduce((a,x)=>a+x[1],0),r=Math.random()*total;for(const [n,w] of pool){r-=w;if(r<=0)return n;}return "鉄";}
 function mineChance(){return pool.map(([n,w])=>`${n} ${w}%`).join(" / ");}
 function bake(n=1){s.bread+=n;render();}
-function sellBread(n){n=Math.min(s.bread,n);if(n<=0)return;s.bread-=n;s.money+=n*BALANCE.bread.sellPrice;note(`パン${fmt(n)}個を売却し、通貨${fmt(n*2)}を得た。`);render();}
+function sellBread(n){n=Math.min(s.bread,n);if(n<=0)return;s.bread-=n;s.money+=n*BALANCE.bread.sellPrice;note(`パン${fmt(n)}個を売却し、通貨${fmt(n*BALANCE.bread.sellPrice)}を得た。`);render();}
 function buy(cost){if(s.money<cost)return false;s.money-=cost;return true;}
 function discoverMine(type,cost){if(!resourceNames.includes(type)||!buy(cost))return;const capacityKey=({"鉄":"iron","銅":"copper","金":"gold","石炭":"coal","ボーキサイト":"bauxite"})[type]||"default";const base=BALANCE.mine.capacityBase[capacityKey];const capacity=Math.floor(base*(BALANCE.mine.capacityRandomFactor.minimum+Math.random()*BALANCE.mine.capacityRandomFactor.range));const rate=type==="金"?BALANCE.mine.miningRatePerSecond.gold:BALANCE.mine.miningRatePerSecond.otherMinimum+Math.random()*BALANCE.mine.miningRatePerSecond.otherRandomRange;const m={type,capacity,remaining:capacity,rate};s.mines.push(m);s.mineCost=Math.ceil(s.mineCost*BALANCE.mine.explorationCostMultiplier);note(type+"鉱山を発見した！ 埋蔵量"+capacity+"。");render();}
 function mineOne(m){if(m.remaining<=0||m.rate<=0)return;const amount=Math.min(m.rate,m.remaining);m.remaining-=amount;s.resources[m.type]+=amount;s.totalMined+=amount;}
@@ -230,6 +230,10 @@ function researchTech(id){const t=technologies.find(x=>x.id===id);if(!t||s.resea
 function render(){
  sanitizeState();
  $("money").textContent=fmt(s.money);$("gold").textContent=fmt(s.gold)+" g";$("bread").textContent=fmt(s.bread);
+ $("bakeAmount").textContent="(+"+fmt(BALANCE.bread.clickProduction)+")";
+ $("taxCost").textContent=fmt(BALANCE.tax.unlockCost);
+ $("adminCost").textContent=fmt(BALANCE.administration.baseCost);
+ $("powerHint").textContent="人口・施設・鉱山が政治負担を増やします。負担が国力を超えると生産効率が下がります。通貨"+fmt(BALANCE.power.recoveryCostPerPoint)+"で国力1を回復できます。";
  $("workers").textContent=fmt(s.workers);$("power").textContent=fmt(s.power);
  const shortage=Math.max(0,s.politicalBurden-s.power);
  $("burden").textContent=fmt(s.politicalBurden);$("powerShortage").textContent=fmt(shortage);
