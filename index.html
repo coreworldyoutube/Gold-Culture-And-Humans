@@ -60,7 +60,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:18px}
         <button id="buyOven">かまどを買う — <span id="ovenCost">25</span></button>
         <button id="buyWorker">労働者を雇う — <span id="workerCost">40</span></button>
       </div>
-      <p class="hint">かまどは毎秒パンを生産。労働者はパンを消費しながら税収と国力を生む。</p>
+      <p class="hint">かまどは毎秒パンを生産。労働者はパンを消費し、税制の導入後に税収を生む。</p>
     </div>
 
     <div class="panel">
@@ -139,7 +139,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:18px}
 "use strict";
 const $ = id => document.getElementById(id);
 const resourceNames = ["金","鉄","銅","鉛","タングステン","錫","石油","ダイヤモンド","琥珀","銀","石英"];
-const prices = {"金":80,"鉄":8,"銅":12,"鉛":7,"タングステン":35,"錫":10,"石油":15,"ダイヤモンド":120,"琥珀":22,"銀":45,"石英":9};
+const prices = {"金":20,"鉄":2,"銅":3,"鉛":2,"タングステン":6,"錫":3,"石油":4,"ダイヤモンド":8,"琥珀":5,"銀":5,"石英":2};
 const pool = [
  ["金",12],["鉄",22],["銅",16],["鉛",10],["タングステン",5],["錫",10],
  ["石油",8],["ダイヤモンド",3],["琥珀",4],["銀",5],["石英",5]
@@ -168,7 +168,7 @@ function render(){
  $("recoverPower").disabled=s.money<recoveryAmount*POWER_RECOVERY_COST;
  $("recoverOne").disabled=s.money<POWER_RECOVERY_COST;$("recoverTen").disabled=s.money<10*POWER_RECOVERY_COST;
  $("recoverMax").disabled=s.money<POWER_RECOVERY_COST;
- const tax=s.tax?s.workers*.8:0;const upkeep=s.workers*.0875;
+ const tax=s.tax?s.workers*1.4:0;const upkeep=s.workers*.0875;
  $("income").textContent=(tax-upkeep>0?"+":"")+((tax-upkeep).toFixed(1))+" / 秒";
  $("ovenCost").textContent=fmt(25*Math.pow(1.35,s.ovens));$("workerCost").textContent=fmt(40*Math.pow(1.22,s.workers));
  $("taxStatus").textContent=s.tax?"導入済み":"未導入";$("taxIncome").textContent=fmt(tax)+" / 秒";
@@ -182,7 +182,7 @@ function render(){
  $("sellBread").disabled=s.bread<10;$("sellAllBread").disabled=s.bread<1;
  $("sellGold").disabled=s.gold<1;$("sellAllGold").disabled=s.gold<1;
  $("sellResources").disabled=resourceNames.every(n=>n==="金"||(s.resources[n]||0)<1);
- $("resources").innerHTML=resourceNames.map(n=>`<div class="resource"><span>${n}</span><strong>${fmt(s.resources[n]||0)}</strong></div>`).join("");
+ $("resources").innerHTML=resourceNames.map(n=>`<div class="resource"><span>${n} <small>· ${fmt(prices[n])} / 個</small></span><strong>${fmt(s.resources[n]||0)}</strong></div>`).join("");
  $("mines").innerHTML=s.mines.length?s.mines.map((m,i)=>`<div class="mine"><div class="mine-head"><span class="mine-name">${m.type}鉱山 <span class="tag">${m.remaining>0?"稼働中":"枯渇"}</span></span><strong>${fmt(m.remaining)} / ${fmt(m.capacity)}</strong></div><div class="progress"><span style="width:${Math.max(0,m.remaining/m.capacity*100)}%"></span></div><small>採掘速度：${m.rate.toFixed(1)} / 秒 · ${m.type==="金"?"金は資産として保管":"採掘資源"}</small></div>`).join(""):'<p class="muted">まだ鉱山は発見されていない。</p>';
  $("log").innerHTML=s.log.map(x=>`<div>${x.replaceAll("&","&amp;").replaceAll("<","&lt;")}</div>`).join("")||"<div>文明の歴史がここに記録される。</div>";
 }
@@ -193,8 +193,8 @@ $("buyOven").onclick=()=>{const c=Math.ceil(25*Math.pow(1.35,s.ovens));if(buy(c)
 $("buyWorker").onclick=()=>{const c=Math.ceil(40*Math.pow(1.22,s.workers));if(buy(c)){s.workers++;note("労働者を1人雇用した。");render();}};
 $("buyTax").onclick=()=>{if(!s.tax&&buy(100)){s.tax=true;note("税制を導入した。労働者から税収が発生する。");render();}};
 $("buyPower").onclick=()=>{const c=Math.ceil(150*Math.pow(1.5,s.admins));if(buy(c)){s.admins++;s.power+=10;note("行政機関を建設。国力が10増加した。");render();}};
-$("explore").onclick=()=>{if(!buy(s.mineCost))return;const type=weightedPick();const capacity=Math.floor((type==="金"?35:type==="鉄"?180:type==="銅"?130:100)*(0.7+Math.random()*.8));const rate=type==="金"?.7:.9+Math.random()*.8;const m={type,capacity,remaining:capacity,rate};s.mines.push(m);s.mineCost=Math.ceil(s.mineCost*1.65);note(`${type}鉱山を発見した！ 埋蔵量${capacity}。`);render();};
-$("sellGold").onclick=()=>{if(s.gold>=1){s.gold--;s.money+=prices["金"];note("金1 gを売却し、通貨80を得た。");render();}};
+$("explore").onclick=()=>{if(!buy(s.mineCost))return;const type=weightedPick();const capacity=Math.floor((type==="金"?35:type==="鉄"?180:type==="銅"?130:100)*(0.7+Math.random()*.8));const rate=type==="金"?.7:.9+Math.random()*.8;const m={type,capacity,remaining:capacity,rate};s.mines.push(m);s.mineCost=Math.ceil(s.mineCost*1.12);note(`${type}鉱山を発見した！ 埋蔵量${capacity}。`);render();};
+$("sellGold").onclick=()=>{if(s.gold>=1){s.gold--;s.money+=prices["金"];note("金1 gを売却し、通貨"+fmt(prices["金"])+"を得た。");render();}};
 $("sellResources").onclick=()=>{let total=0,items=0;for(const n of resourceNames){if(n==="金")continue;const amount=Math.floor(s.resources[n]||0);if(amount>0){s.resources[n]-=amount;total+=amount*prices[n];items+=amount;}}if(total>0){s.money+=total;note(fmt(items)+"個の資源を売却し、通貨"+fmt(total)+"を得た。");render();}};
 $("sellAllGold").onclick=()=>{const n=Math.floor(s.gold);if(n>0){s.gold-=n;s.money+=n*prices["金"];note(`金${n} gを売却し、通貨${fmt(n*prices["金"])}を得た。`);render();}};
 function recoverPower(amount){amount=Math.floor(Number(amount));if(!Number.isFinite(amount)||amount<1)return;const cost=amount*POWER_RECOVERY_COST;if(s.money<cost){note("通貨が足りないため、国力を回復できなかった。");render();return;}s.money-=cost;s.power+=amount;note(`通貨${fmt(cost)}を使い、国力を${fmt(amount)}回復した。`);render();}
@@ -213,7 +213,7 @@ function simulate(seconds){const dt=Math.max(0,Number(seconds)||0);if(!dt)return
  s.bread+=s.ovens*.8*efficiency*dt;
  const fed=s.workers===0?0:Math.min(s.workers,s.bread/(.35*dt));
  s.bread=Math.max(0,s.bread-fed*.35*dt);
- if(s.tax)s.money+=fed*.8*dt;
+ if(s.tax)s.money+=fed*1.4*dt;
  s.money=Math.max(0,s.money-s.workers*.0875*dt);
  s.power+=s.admins*.12*dt;
  for(const m of s.mines){if(m.remaining>0){const mined=Math.min(m.rate*efficiency*dt,m.remaining);m.remaining=Math.max(0,m.remaining-mined);s.resources[m.type]=(s.resources[m.type]||0)+mined;s.totalMined+=mined;if(m.type==="金")s.gold+=mined;}}
