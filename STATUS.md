@@ -3,7 +3,7 @@
 - リポジトリ: [Gold-Culture-And-Humans](https://github.com/coreworldyoutube/Gold-Culture-And-Humans)
 - ゲーム名: 金クリッカー / Civilization Clicker
 - 確認したバージョン表示: Prototype 0.5
-- 現在の実装: `index.html` にHTML・CSS・JavaScriptを集約
+- 現在の実装: `index.html` にHTML・CSS・JavaScript、`data/balance.json` にバランス設定
 - セーブ方式: ブラウザのLocalStorage
 - セーブキー: `goldClickerSave`
 - セーブデータ形式: `schemaVersion: 4`
@@ -283,7 +283,7 @@ Gold-Culture-And-Humans/
 
 現状ではゲーム本体のHTML・CSS・JavaScriptが `index.html` にまとまっている。
 
-## 10. 今後の開発：JSONによるバランス設定
+## 10. 今後の開発：JSON設定の拡張
 
 ゲーム内の調整値は `data/balance.json` に分離済み。今後は残りの固定値も設定ファイルへ集約する。
 
@@ -318,6 +318,9 @@ Gold-Culture-And-Humans/
 ├── README.md
 ├── STATUS.md
 ├── index.html
+├── STATUS.md
+└── data/
+    └── balance.json
 ├── js/
 │   └── game.js
 └── data/
