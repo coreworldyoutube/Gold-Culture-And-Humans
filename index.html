@@ -21,6 +21,7 @@ button:hover:not(:disabled){filter:brightness(1.15);transform:translateY(-1px)}b
 .muted{color:var(--muted)}.hint{font-size:12px;color:var(--muted);margin:8px 0 0}
 .progress{height:9px;background:#0e141c;border-radius:99px;overflow:hidden;margin:8px 0}.progress span{display:block;height:100%;background:linear-gradient(90deg,#c18b27,#f4d16b);width:0%}
 .exchange-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}.exchange-row input{width:110px;background:#0e141c;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px}.exchange-info{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}
+.exchange-row select{max-width:190px;background:#0e141c;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px}
 .resource-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
 .resource{display:flex;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:8px;background:#111923;border:1px solid #2d3948}
 .industry-list{display:grid;gap:7px;margin-top:8px}.industry-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;background:#111923;border:1px solid #2d3948}.industry-row>div{min-width:0}.industry-row strong{display:block}.industry-row small{display:block;color:var(--muted);font-size:12px}.industry-row button{flex:none;padding:8px 10px}.locked{opacity:.65}
@@ -100,6 +101,8 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:18px}
       <h2>⛏️ 鉱山探索ガチャ</h2>
       <p class="muted">探索費用：<strong id="mineCost">250</strong> 通貨</p>
       <button class="primary" id="explore">鉱山を探索する</button>
+      <div class="exchange-row"><label for="surveyResource">鉱物を指定</label><select id="surveyResource"><option>銅</option><option>錫</option><option>鉄</option><option>石炭</option><option>石英</option><option>石油</option><option>ボーキサイト</option><option>鉛</option><option>タングステン</option><option>銀</option><option>金</option><option>琥珀</option><option>ダイヤモンド</option></select><button id="survey">指定調査 — <span id="surveyCost">375</span></button></div>
+      <p class="hint">指定調査はランダム探索より50%高額。必要な鉱物を狙って探せる。</p>
       <p class="hint">発見される鉱山はランダム。埋蔵量には限りがあり、採掘を続けると枯渇する。</p>
       <div id="mines"><p class="muted">まだ鉱山は発見されていない。</p></div>
     </div>
@@ -209,6 +212,7 @@ function mineChance(){return pool.map(([n,w])=>`${n} ${w}%`).join(" / ");}
 function bake(n=1){s.bread+=n;render();}
 function sellBread(n){n=Math.min(s.bread,n);if(n<=0)return;s.bread-=n;s.money+=n*2;note(`パン${fmt(n)}個を売却し、通貨${fmt(n*2)}を得た。`);render();}
 function buy(cost){if(s.money<cost)return false;s.money-=cost;return true;}
+function discoverMine(type,cost){if(!resourceNames.includes(type)||!buy(cost))return;const base=type==="鉄"?180:type==="銅"?130:type==="金"?35:type==="石炭"?180:type==="ボーキサイト"?90:100;const capacity=Math.floor(base*(0.7+Math.random()*.8));const rate=type==="金"?.7:.9+Math.random()*.8;const m={type,capacity,remaining:capacity,rate};s.mines.push(m);s.mineCost=Math.ceil(s.mineCost*1.12);note(type+"鉱山を発見した！ 埋蔵量"+capacity+"。");render();}
 function mineOne(m){if(m.remaining<=0||m.rate<=0)return;const amount=Math.min(m.rate,m.remaining);m.remaining-=amount;s.resources[m.type]+=amount;s.totalMined+=amount;}
 function costText(cost){const parts=[];for(const [k,n] of Object.entries(cost.raw||{}))parts.push(k+" "+n);for(const [k,n] of Object.entries(cost.goods||{}))parts.push(k+" "+n);if(cost.money)parts.push("通貨 "+fmt(cost.money));return parts.join(" · ")||"なし";}
 function hasCost(cost){return s.money>=(cost.money||0)&&Object.entries(cost.raw||{}).every(([k,n])=>(s.resources[k]||0)>=n)&&Object.entries(cost.goods||{}).every(([k,n])=>(s.goods[k]||0)>=n);}
@@ -243,6 +247,7 @@ function render(){
  $("buyWorker").disabled=s.money<40*Math.pow(1.22,s.workers);
  $("buyTax").disabled=s.tax||s.money<100;$("buyPower").disabled=s.money<150*Math.pow(1.5,s.admins);
  $("explore").disabled=s.money<s.mineCost;
+ $("surveyCost").textContent=fmt(Math.ceil(s.mineCost*1.5));$("survey").disabled=s.money<Math.ceil(s.mineCost*1.5);
  $("sellBread").disabled=s.bread<10;$("sellAllBread").disabled=s.bread<1;
  $("sellGold").disabled=s.gold<1;$("sellAllGold").disabled=s.gold<1;
  $("sellResources").disabled=resourceNames.every(n=>n==="金"||(s.resources[n]||0)<1);
@@ -261,7 +266,8 @@ $("buyOven").onclick=()=>{const c=Math.ceil(25*Math.pow(1.35,s.ovens));if(buy(c)
 $("buyWorker").onclick=()=>{const c=Math.ceil(40*Math.pow(1.22,s.workers));if(buy(c)){s.workers++;note("労働者を1人雇用した。");render();}};
 $("buyTax").onclick=()=>{if(!s.tax&&buy(100)){s.tax=true;note("税制を導入した。労働者から税収が発生する。");render();}};
 $("buyPower").onclick=()=>{const c=Math.ceil(150*Math.pow(1.5,s.admins));if(buy(c)){s.admins++;s.power+=10;note("行政機関を建設。国力が10増加した。");render();}};
-$("explore").onclick=()=>{if(!buy(s.mineCost))return;const type=weightedPick();const base=type==="鉄"?180:type==="銅"?130:type==="金"?35:type==="石炭"?180:type==="ボーキサイト"?90:100;const capacity=Math.floor(base*(0.7+Math.random()*.8));const rate=type==="金"?.7:.9+Math.random()*.8;const m={type,capacity,remaining:capacity,rate};s.mines.push(m);s.mineCost=Math.ceil(s.mineCost*1.12);note(`${type}鉱山を発見した！ 埋蔵量${capacity}。`);render();};
+$("explore").onclick=()=>discoverMine(weightedPick(),s.mineCost);
+$("survey").onclick=()=>discoverMine($("surveyResource").value,Math.ceil(s.mineCost*1.5));
 $("sellGold").onclick=()=>{if(s.gold>=1){s.gold--;s.money+=prices["金"];note("金1 gを売却し、通貨"+fmt(prices["金"])+"を得た。");render();}};
 $("sellResources").onclick=()=>{let total=0,items=0;for(const n of resourceNames){if(n==="金")continue;const amount=Math.floor(s.resources[n]||0);if(amount>0){s.resources[n]-=amount;total+=amount*prices[n];items+=amount;}}if(total>0){s.money+=total;note(fmt(items)+"個の資源を売却し、通貨"+fmt(total)+"を得た。");render();}};
 $("sellAllGold").onclick=()=>{const n=Math.floor(s.gold);if(n>0){s.gold-=n;s.money+=n*prices["金"];note(`金${n} gを売却し、通貨${fmt(n*prices["金"])}を得た。`);render();}};
