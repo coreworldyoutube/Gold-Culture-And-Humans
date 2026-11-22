@@ -22,17 +22,17 @@
   },
   "oven": {
     "baseCost": 25,
-    "costMultiplier": 1.35,
-    "breadProductionPerSecond": 0.8,
+    "costMultiplier": 1.08,
+    "breadProductionPerSecond": 10,
     "politicalBurden": 1
   },
   "worker": {
     "baseCost": 40,
-    "costMultiplier": 1.22,
+    "costMultiplier": 1.01,
     "taxIncomePerSecond": 1.4,
     "upkeepPerSecond": 0.0875,
     "breadConsumptionPerSecond": 0.35,
-    "politicalBurden": 2
+    "politicalBurden": 0.02
   },
   "tax": {
     "unlockCost": 100
