@@ -1,0 +1,143 @@
+{
+  "configVersion": 1,
+  "description": "金クリッカー prototype 0.4 のバランス設定。index.html の現行値を変更せずに整理したもの。",
+  "initial": {
+    "money": 0,
+    "gold": 0,
+    "bread": 0,
+    "workers": 0,
+    "ovens": 0,
+    "tax": false,
+    "admins": 0,
+    "power": 100,
+    "politicalBurden": 0,
+    "mineCost": 250
+  },
+  "offline": {
+    "maxSimulationSeconds": 28800
+  },
+  "bread": {
+    "clickProduction": 1,
+    "sellPrice": 2
+  },
+  "oven": {
+    "baseCost": 25,
+    "costMultiplier": 1.35,
+    "breadProductionPerSecond": 0.8,
+    "politicalBurden": 1
+  },
+  "worker": {
+    "baseCost": 40,
+    "costMultiplier": 1.22,
+    "taxIncomePerSecond": 1.4,
+    "upkeepPerSecond": 0.0875,
+    "breadConsumptionPerSecond": 0.35,
+    "politicalBurden": 2
+  },
+  "tax": {
+    "unlockCost": 100
+  },
+  "administration": {
+    "baseCost": 150,
+    "costMultiplier": 1.5,
+    "powerGrantedOnPurchase": 10,
+    "powerRecoveryPerSecond": 0.12,
+    "politicalBurden": 4
+  },
+  "power": {
+    "recoveryCostPerPoint": 100,
+    "efficiency": {
+      "minimum": 0.25,
+      "shortagePenaltyMultiplier": 0.75
+    }
+  },
+  "mine": {
+    "baseExplorationCost": 250,
+    "explorationCostMultiplier": 1.12,
+    "targetedSurveyCostMultiplier": 1.5,
+    "politicalBurdenPerActiveMine": 10,
+    "capacityBase": {
+      "default": 100,
+      "iron": 180,
+      "copper": 130,
+      "gold": 35,
+      "coal": 180,
+      "bauxite": 90
+    },
+    "capacityRandomFactor": {
+      "minimum": 0.7,
+      "range": 0.8
+    },
+    "miningRatePerSecond": {
+      "gold": 0.7,
+      "otherMinimum": 0.9,
+      "otherRandomRange": 0.8
+    },
+    "steamEngineMiningRateBonusPerUnit": 0.1
+  },
+  "generator": {
+    "powerRecoveryPerSecondPerUnit": 0.5
+  },
+  "resourcePrices": {
+    "金": 20,
+    "鉄": 2,
+    "銅": 3,
+    "鉛": 2,
+    "タングステン": 6,
+    "錫": 3,
+    "石油": 4,
+    "ダイヤモンド": 8,
+    "琥珀": 5,
+    "銀": 5,
+    "石英": 2,
+    "石炭": 1,
+    "ボーキサイト": 1
+  },
+  "mineDiscoveryWeights": [
+    { "resource": "金", "weight": 10 },
+    { "resource": "鉄", "weight": 20 },
+    { "resource": "銅", "weight": 15 },
+    { "resource": "鉛", "weight": 8 },
+    { "resource": "タングステン", "weight": 4 },
+    { "resource": "錫", "weight": 9 },
+    { "resource": "石油", "weight": 8 },
+    { "resource": "ダイヤモンド", "weight": 2 },
+    { "resource": "琥珀", "weight": 4 },
+    { "resource": "銀", "weight": 4 },
+    { "resource": "石英", "weight": 6 },
+    { "resource": "石炭", "weight": 8 },
+    { "resource": "ボーキサイト", "weight": 2 }
+  ],
+  "recipes": [
+    { "name": "銅インゴット", "raw": { "銅": 2, "石炭": 1 }, "output": { "銅インゴット": 1 }, "technology": "copper_smelting" },
+    { "name": "錫インゴット", "raw": { "錫": 2, "石炭": 1 }, "output": { "錫インゴット": 1 }, "technology": "copper_smelting" },
+    { "name": "青銅インゴット ×10", "goods": { "銅インゴット": 9, "錫インゴット": 1 }, "output": { "青銅インゴット": 10 }, "technology": "bronze_casting" },
+    { "name": "青銅歯車", "goods": { "青銅インゴット": 2 }, "output": { "青銅歯車": 1 }, "technology": "bronze_casting" },
+    { "name": "鉄インゴット", "raw": { "鉄": 2, "石炭": 2 }, "output": { "鉄インゴット": 1 }, "technology": "ironworking" },
+    { "name": "鋼材", "goods": { "鉄インゴット": 2 }, "raw": { "石炭": 2 }, "output": { "鋼材": 1 }, "technology": "steelmaking" },
+    { "name": "鉄板 ×2", "goods": { "鉄インゴット": 1 }, "output": { "鉄板": 2 }, "technology": "steam_power" },
+    { "name": "蒸気機関", "goods": { "鉄板": 4, "青銅歯車": 3, "鋼材": 2 }, "raw": { "石炭": 5 }, "output": { "蒸気機関": 1 }, "technology": "steam_power" },
+    { "name": "発電機", "goods": { "蒸気機関": 1, "銅線": 4, "鋼材": 2 }, "output": { "発電機": 1 }, "technology": "electricity" },
+    { "name": "銅線 ×3", "goods": { "銅インゴット": 1 }, "output": { "銅線": 3 }, "technology": "electricity" },
+    { "name": "シリコンウェハ", "raw": { "石英": 3, "石炭": 2 }, "output": { "シリコンウェハ": 1 }, "technology": "semiconductors" },
+    { "name": "アルミインゴット", "raw": { "ボーキサイト": 3, "石炭": 2 }, "output": { "アルミインゴット": 1 }, "technology": "electricity" },
+    { "name": "プラスチック", "raw": { "石油": 2 }, "output": { "プラスチック": 1 }, "technology": "chemistry" },
+    { "name": "トランジスタ", "goods": { "シリコンウェハ": 1, "銅線": 2, "プラスチック": 1 }, "output": { "トランジスタ": 1 }, "technology": "transistor" },
+    { "name": "集積回路", "goods": { "トランジスタ": 2, "シリコンウェハ": 2, "銅線": 4, "プラスチック": 1 }, "output": { "集積回路": 1 }, "technology": "integrated_circuit" },
+    { "name": "ロケット燃料", "raw": { "石油": 3, "石炭": 2 }, "output": { "ロケット燃料": 1 }, "technology": "chemistry" },
+    { "name": "ロケット", "goods": { "鋼材": 8, "アルミインゴット": 6, "集積回路": 4, "ロケット燃料": 8 }, "output": { "ロケット": 1 }, "technology": "rocketry" }
+  ],
+  "technologies": [
+    { "id": "copper_smelting", "cost": { "raw": { "銅": 2, "石炭": 1 }, "money": 50 } },
+    { "id": "bronze_casting", "requires": ["copper_smelting"], "cost": { "goods": { "銅インゴット": 9, "錫インゴット": 1 }, "money": 100 } },
+    { "id": "ironworking", "requires": ["bronze_casting"], "cost": { "goods": { "青銅インゴット": 4 }, "raw": { "鉄": 2, "石炭": 3 }, "money": 200 } },
+    { "id": "steelmaking", "requires": ["ironworking"], "cost": { "goods": { "鉄インゴット": 6 }, "raw": { "石炭": 6 }, "money": 400 } },
+    { "id": "steam_power", "requires": ["ironworking", "steelmaking"], "cost": { "goods": { "鉄インゴット": 8, "青銅歯車": 4 }, "raw": { "石炭": 8 }, "money": 600 } },
+    { "id": "electricity", "requires": ["steam_power"], "cost": { "goods": { "鋼材": 4, "銅インゴット": 6 }, "raw": { "石炭": 8 }, "money": 800 } },
+    { "id": "chemistry", "requires": ["electricity"], "cost": { "goods": { "鋼材": 3 }, "raw": { "石油": 5, "石炭": 5 }, "money": 1200 } },
+    { "id": "semiconductors", "requires": ["electricity"], "cost": { "raw": { "石英": 6, "石炭": 4 }, "goods": { "銅線": 4 }, "money": 1500 } },
+    { "id": "transistor", "requires": ["semiconductors", "chemistry"], "cost": { "goods": { "シリコンウェハ": 3, "銅線": 6, "プラスチック": 2 }, "money": 2500 } },
+    { "id": "integrated_circuit", "requires": ["transistor"], "cost": { "goods": { "トランジスタ": 2, "シリコンウェハ": 6, "銅線": 8, "プラスチック": 4 }, "money": 5000 } },
+    { "id": "rocketry", "requires": ["integrated_circuit", "chemistry"], "cost": { "goods": { "鋼材": 8, "アルミインゴット": 4, "集積回路": 3, "ロケット燃料": 4 }, "money": 10000 } }
+  ]
+}
