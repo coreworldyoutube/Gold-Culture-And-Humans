@@ -21,8 +21,10 @@ button:hover:not(:disabled){filter:brightness(1.15);transform:translateY(-1px)}b
 .muted{color:var(--muted)}.hint{font-size:12px;color:var(--muted);margin:8px 0 0}
 .progress{height:9px;background:#0e141c;border-radius:99px;overflow:hidden;margin:8px 0}.progress span{display:block;height:100%;background:linear-gradient(90deg,#c18b27,#f4d16b);width:0%}
 .exchange-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}.exchange-row input{width:110px;background:#0e141c;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px}.exchange-info{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}
+.exchange-row select{max-width:190px;background:#0e141c;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px}
 .resource-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
 .resource{display:flex;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:8px;background:#111923;border:1px solid #2d3948}
+.industry-list{display:grid;gap:7px;margin-top:8px}.industry-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;background:#111923;border:1px solid #2d3948}.industry-row>div{min-width:0}.industry-row strong{display:block}.industry-row small{display:block;color:var(--muted);font-size:12px}.industry-row button{flex:none;padding:8px 10px}.locked{opacity:.65}
 .mine{padding:10px;border-radius:9px;background:#111923;border:1px solid #344254;margin-top:8px}
 .mine-head{display:flex;justify-content:space-between;gap:8px;align-items:center}.mine-name{font-weight:700}.mine small{color:var(--muted)}
 .log{height:170px;overflow:auto;background:#0e141c;border:1px solid #2c3948;border-radius:9px;padding:9px;font-size:13px}
@@ -35,6 +37,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:18px}
 <header>
   <h1>金クリッカー</h1>
   <p>パン屋から始めて、資源と産業を育て、文明を宇宙へ。</p>
+  <div class="actions" style="justify-content:center"><button id="reset">最初から</button></div>
 </header>
 <main>
   <section class="stats">
@@ -60,7 +63,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:18px}
         <button id="buyOven">かまどを買う — <span id="ovenCost">25</span></button>
         <button id="buyWorker">労働者を雇う — <span id="workerCost">40</span></button>
       </div>
-      <p class="hint">かまどは毎秒パンを生産。労働者はパンを消費しながら税収と国力を生む。</p>
+      <p class="hint">かまどは毎秒パンを生産。労働者はパンを消費し、税制の導入後に税収を生む。</p>
     </div>
 
     <div class="panel">
@@ -99,6 +102,8 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:18px}
       <h2>⛏️ 鉱山探索ガチャ</h2>
       <p class="muted">探索費用：<strong id="mineCost">250</strong> 通貨</p>
       <button class="primary" id="explore">鉱山を探索する</button>
+      <div class="exchange-row"><label for="surveyResource">鉱物を指定</label><select id="surveyResource"><option>銅</option><option>錫</option><option>鉄</option><option>石炭</option><option>石英</option><option>石油</option><option>ボーキサイト</option><option>鉛</option><option>タングステン</option><option>銀</option><option>金</option><option>琥珀</option><option>ダイヤモンド</option></select><button id="survey">指定調査 — <span id="surveyCost">375</span></button></div>
+      <p class="hint">指定調査はランダム探索より50%高額。必要な鉱物を狙って探せる。</p>
       <p class="hint">発見される鉱山はランダム。埋蔵量には限りがあり、採掘を続けると枯渇する。</p>
       <div id="mines"><p class="muted">まだ鉱山は発見されていない。</p></div>
     </div>
@@ -116,7 +121,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:18px}
 
     <div class="panel">
       <h2>🏭 産業・開発</h2>
-      <p>鉱山を開発し、資源を市場で売って次の設備へ投資しよう。精錬・工場・交易は今後の発展要素。</p>
+      <p>鉱石を精錬・加工して設備と研究に使おう。蒸気機関は採掘を速め、発電機は国力を支える。</p>
       <div class="resource-grid">
         <div class="resource"><span>パン屋</span><strong id="ovens">0</strong></div>
         <div class="resource"><span>行政機関</span><strong id="admins">0</strong></div>
@@ -126,39 +131,116 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:18px}
     </div>
 
     <div class="panel">
+      <h2>⚒️ 製錬・加工</h2>
+      <p class="hint">鉱石や部品を使ってインゴット・機械・電子部品を作る。レシピは研究で解放される。</p>
+      <h3>加工品在庫</h3>
+      <div class="resource-grid" id="products"></div>
+      <h3>レシピ</h3>
+      <div class="industry-list" id="recipes"></div>
+    </div>
+
+    <div class="panel">
+      <h2>🔬 技術研究</h2>
+      <p class="hint">研究には実際の資源と加工品を使う。青銅・鉄・蒸気・電気・半導体を経てロケット技術を目指そう。</p>
+      <div class="industry-list" id="technologies"></div>
+      <div class="resource" style="margin-top:10px"><span>製造したロケット</span><strong id="rocketCount">0</strong></div>
+      <div class="actions"><button id="launchRocket" class="primary">ロケットを打ち上げる</button></div>
+    </div>
+
+    <div class="panel">
       <h2>📜 国家の記録</h2>
       <div class="log" id="log" aria-live="polite"><div>文明の歴史がここに記録される。</div></div>
-      <div class="actions"><button id="save">セーブ</button><button id="reset">最初から</button></div>
+      <div class="actions"><button id="save">セーブ</button></div>
       <p class="hint">このブラウザのLocalStorageに自動保存される。</p>
     </div>
   </section>
-  <footer>金クリッカー prototype 0.3 · 放置生産 · 資源市場 · ブラウザ保存対応</footer>
+  <footer>金クリッカー prototype 0.4 · 製錬・技術研究・宇宙開発</footer>
 </main>
 <script>
 (() => {
 "use strict";
 const $ = id => document.getElementById(id);
-const resourceNames = ["金","鉄","銅","鉛","タングステン","錫","石油","ダイヤモンド","琥珀","銀","石英"];
-const prices = {"金":80,"鉄":8,"銅":12,"鉛":7,"タングステン":35,"錫":10,"石油":15,"ダイヤモンド":120,"琥珀":22,"銀":45,"石英":9};
+const resourceNames = ["金","鉄","銅","鉛","タングステン","錫","石油","ダイヤモンド","琥珀","銀","石英","石炭","ボーキサイト"];
+const prices = {"金":20,"鉄":2,"銅":3,"鉛":2,"タングステン":6,"錫":3,"石油":4,"ダイヤモンド":8,"琥珀":5,"銀":5,"石英":2,"石炭":1,"ボーキサイト":1};
 const pool = [
- ["金",12],["鉄",22],["銅",16],["鉛",10],["タングステン",5],["錫",10],
- ["石油",8],["ダイヤモンド",3],["琥珀",4],["銀",5],["石英",5]
+ ["金",10],["鉄",20],["銅",15],["鉛",8],["タングステン",4],["錫",9],
+ ["石油",8],["ダイヤモンド",2],["琥珀",4],["銀",4],["石英",6],["石炭",8],["ボーキサイト",2]
 ];
 const POWER_RECOVERY_COST = 100; // 通貨100 = 国力1（調整可能な仮設定）
-const fresh = () => ({schemaVersion:3,lastSavedAt:Date.now(),
+const productNames = ["銅インゴット","錫インゴット","青銅インゴット","鉄インゴット","鋼材","鉄板","青銅歯車","銅線","シリコンウェハ","プラスチック","トランジスタ","集積回路","アルミインゴット","ロケット燃料","蒸気機関","発電機","ロケット"];
+const technologyNames = {copper_smelting:"銅の製錬",bronze_casting:"青銅合金",ironworking:"鉄器と鍛冶",steelmaking:"大量製鉄",steam_power:"蒸気機関",electricity:"電力と機械",chemistry:"工業化学",semiconductors:"半導体材料",transistor:"トランジスタ",integrated_circuit:"集積回路",rocketry:"液体燃料ロケット"};
+const recipes = [
+ {name:"銅インゴット",raw:{"銅":2,"石炭":1},out:{"銅インゴット":1},tech:"copper_smelting"},
+ {name:"錫インゴット",raw:{"錫":2,"石炭":1},out:{"錫インゴット":1},tech:"copper_smelting"},
+ {name:"青銅インゴット ×10",goods:{"銅インゴット":9,"錫インゴット":1},out:{"青銅インゴット":10},tech:"bronze_casting"},
+ {name:"青銅歯車",goods:{"青銅インゴット":2},out:{"青銅歯車":1},tech:"bronze_casting"},
+ {name:"鉄インゴット",raw:{"鉄":2,"石炭":2},out:{"鉄インゴット":1},tech:"ironworking"},
+ {name:"鋼材",goods:{"鉄インゴット":2},raw:{"石炭":2},out:{"鋼材":1},tech:"steelmaking"},
+ {name:"鉄板 ×2",goods:{"鉄インゴット":1},out:{"鉄板":2},tech:"steam_power"},
+ {name:"蒸気機関",goods:{"鉄板":4,"青銅歯車":3,"鋼材":2},raw:{"石炭":5},out:{"蒸気機関":1},tech:"steam_power"},
+ {name:"発電機",goods:{"蒸気機関":1,"銅線":4,"鋼材":2},out:{"発電機":1},tech:"electricity"},
+ {name:"銅線 ×3",goods:{"銅インゴット":1},out:{"銅線":3},tech:"electricity"},
+ {name:"シリコンウェハ",raw:{"石英":3,"石炭":2},out:{"シリコンウェハ":1},tech:"semiconductors"},
+ {name:"アルミインゴット",raw:{"ボーキサイト":3,"石炭":2},out:{"アルミインゴット":1},tech:"electricity"},
+ {name:"プラスチック",raw:{"石油":2},out:{"プラスチック":1},tech:"chemistry"},
+ {name:"トランジスタ",goods:{"シリコンウェハ":1,"銅線":2,"プラスチック":1},out:{"トランジスタ":1},tech:"transistor"},
+ {name:"集積回路",goods:{"トランジスタ":2,"シリコンウェハ":2,"銅線":4,"プラスチック":1},out:{"集積回路":1},tech:"integrated_circuit"},
+ {name:"ロケット燃料",raw:{"石油":3,"石炭":2},out:{"ロケット燃料":1},tech:"chemistry"},
+ {name:"ロケット",goods:{"鋼材":8,"アルミインゴット":6,"集積回路":4,"ロケット燃料":8},out:{"ロケット":1},tech:"rocketry"}
+];
+const technologies = [
+ {id:"copper_smelting",cost:{raw:{"銅":2,"石炭":1},money:50},desc:"銅・錫の製錬を解放"},
+ {id:"bronze_casting",requires:["copper_smelting"],cost:{goods:{"銅インゴット":9,"錫インゴット":1},money:100},desc:"青銅合金と歯車を解放"},
+ {id:"ironworking",requires:["bronze_casting"],cost:{goods:{"青銅インゴット":4},raw:{"鉄":2,"石炭":3},money:200},desc:"鉄の製錬を解放"},
+ {id:"steelmaking",requires:["ironworking"],cost:{goods:{"鉄インゴット":6},raw:{"石炭":6},money:400},desc:"鋼材の大量生産を解放"},
+ {id:"steam_power",requires:["ironworking","steelmaking"],cost:{goods:{"鉄インゴット":8,"青銅歯車":4},raw:{"石炭":8},money:600},desc:"鉄板と蒸気機関を解放。蒸気機関は採掘を速める"},
+ {id:"electricity",requires:["steam_power"],cost:{goods:{"鋼材":4,"銅インゴット":6},raw:{"石炭":8},money:800},desc:"銅線・アルミ・発電機を解放"},
+ {id:"chemistry",requires:["electricity"],cost:{goods:{"鋼材":3},raw:{"石油":5,"石炭":5},money:1200},desc:"プラスチックとロケット燃料を解放"},
+ {id:"semiconductors",requires:["electricity"],cost:{raw:{"石英":6,"石炭":4},goods:{"銅線":4},money:1500},desc:"シリコンウェハを解放"},
+ {id:"transistor",requires:["semiconductors","chemistry"],cost:{goods:{"シリコンウェハ":3,"銅線":6,"プラスチック":2},money:2500},desc:"トランジスタを解放"},
+ {id:"integrated_circuit",requires:["transistor"],cost:{goods:{"トランジスタ":2,"シリコンウェハ":6,"銅線":8,"プラスチック":4},money:5000},desc:"集積回路を解放"},
+ {id:"rocketry",requires:["integrated_circuit","chemistry"],cost:{goods:{"鋼材":8,"アルミインゴット":4,"集積回路":3,"ロケット燃料":4},money:10000},desc:"ロケット製造を解放"}
+];
+const fresh = () => ({schemaVersion:4,lastSavedAt:Date.now(),money:0,gold:0,bread:0,workers:0,ovens:0,tax:false,admins:0,power:100,politicalBurden:0,goods:Object.fromEntries(productNames.map(n=>[n,0])),researched:[],rocketsLaunched:0,
  resources:Object.fromEntries(resourceNames.map(n=>[n,0])),mines:[],totalMined:0,mineCost:250,log:[]});
 let s = fresh();
-function fmt(n){return Math.floor(n).toLocaleString("ja-JP");}
+function finiteNonnegative(value,fallback=0){const n=Number(value);return Number.isFinite(n)&&n>=0?n:fallback;}
+function sanitizeState(){
+ for(const key of ["money","gold","bread","workers","ovens","admins","power","politicalBurden","totalMined","mineCost","rocketsLaunched"])s[key]=finiteNonnegative(s[key],key==="power"?100:0);
+ s.mineCost=Math.max(250,s.mineCost);
+ s.resources=Object.fromEntries(resourceNames.map(n=>[n,finiteNonnegative(s.resources?.[n])]));
+ s.goods=Object.fromEntries(productNames.map(n=>[n,finiteNonnegative(s.goods?.[n])]));
+ s.mines=(Array.isArray(s.mines)?s.mines:[]).filter(m=>m&&resourceNames.includes(m.type)).map(m=>{const capacity=finiteNonnegative(m.capacity);return {...m,capacity,remaining:Math.min(capacity,finiteNonnegative(m.remaining)),rate:finiteNonnegative(m.rate)};}).filter(m=>m.capacity>0);
+ s.researched=(Array.isArray(s.researched)?s.researched:[]).filter(id=>Object.prototype.hasOwnProperty.call(technologyNames,id));
+ s.rocketsLaunched=finiteNonnegative(s.rocketsLaunched);
+ s.log=(Array.isArray(s.log)?s.log:[]).filter(x=>typeof x==="string").slice(0,35);
+ if(typeof s.tax!=="boolean")s.tax=Boolean(s.tax);
+}
+function fmt(n){const value=Number(n);return Math.floor(Number.isFinite(value)?value:0).toLocaleString("ja-JP");}
 function note(t){s.log.unshift(new Date().toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"})+" "+t);s.log=s.log.slice(0,35);}
 function save(silent=false){if(!silent)note("ゲームをセーブした。");s.lastSavedAt=Date.now();try{localStorage.setItem("goldClickerSave",JSON.stringify(s));}catch(e){note("保存に失敗した。ブラウザの保存容量を確認してください。");console.warn(e);}render();}
-function load(){try{const raw=localStorage.getItem("goldClickerSave");if(!raw)return;const d=JSON.parse(raw);if(!d||typeof d!=="object")throw new Error("セーブデータの形式が不正です");s={...fresh(),...d,resources:{...fresh().resources,...(d.resources||{})},mines:Array.isArray(d.mines)?d.mines:[],log:Array.isArray(d.log)?d.log:[]};if(!d.schemaVersion||d.schemaVersion<2){s.power=Math.max(100,Number(d.power)||0);s.politicalBurden=Number(d.politicalBurden)||0;}s.schemaVersion=3;const elapsed=Math.max(0,Math.min(28800,(Date.now()-(Number(d.lastSavedAt)||Date.now()))/1000));if(elapsed>=1){simulate(elapsed);note("留守中の"+fmt(elapsed)+"秒分、生産を進めた。");}}catch(e){console.warn(e);note("セーブデータを読み込めなかったため、新しい状態で開始した。");s=fresh();}}
+function load(){try{const raw=localStorage.getItem("goldClickerSave");if(!raw)return;const d=JSON.parse(raw);if(!d||typeof d!=="object")throw new Error("セーブデータの形式が不正です");s={...fresh(),...d,resources:{...fresh().resources,...(d.resources||{})},goods:{...fresh().goods,...(d.goods||{})},researched:Array.isArray(d.researched)?d.researched:[],mines:Array.isArray(d.mines)?d.mines:[],log:Array.isArray(d.log)?d.log:[]};if(!d.schemaVersion||d.schemaVersion<2){s.power=Math.max(100,Number(d.power)||0);s.politicalBurden=Number(d.politicalBurden)||0;}s.schemaVersion=4;const elapsed=Math.max(0,Math.min(28800,(Date.now()-(Number(d.lastSavedAt)||Date.now()))/1000));if(elapsed>=1){simulate(elapsed);note("留守中の"+fmt(elapsed)+"秒分、生産を進めた。");}save(true);}catch(e){console.warn(e);note("セーブデータを読み込めなかったため、新しい状態で開始した。");s=fresh();}}
 function weightedPick(){let total=pool.reduce((a,x)=>a+x[1],0),r=Math.random()*total;for(const [n,w] of pool){r-=w;if(r<=0)return n;}return "鉄";}
 function mineChance(){return pool.map(([n,w])=>`${n} ${w}%`).join(" / ");}
 function bake(n=1){s.bread+=n;render();}
 function sellBread(n){n=Math.min(s.bread,n);if(n<=0)return;s.bread-=n;s.money+=n*2;note(`パン${fmt(n)}個を売却し、通貨${fmt(n*2)}を得た。`);render();}
 function buy(cost){if(s.money<cost)return false;s.money-=cost;return true;}
+function discoverMine(type,cost){if(!resourceNames.includes(type)||!buy(cost))return;const base=type==="鉄"?180:type==="銅"?130:type==="金"?35:type==="石炭"?180:type==="ボーキサイト"?90:100;const capacity=Math.floor(base*(0.7+Math.random()*.8));const rate=type==="金"?.7:.9+Math.random()*.8;const m={type,capacity,remaining:capacity,rate};s.mines.push(m);s.mineCost=Math.ceil(s.mineCost*1.12);note(type+"鉱山を発見した！ 埋蔵量"+capacity+"。");render();}
 function mineOne(m){if(m.remaining<=0||m.rate<=0)return;const amount=Math.min(m.rate,m.remaining);m.remaining-=amount;s.resources[m.type]+=amount;s.totalMined+=amount;}
+function costText(cost){const parts=[];for(const [k,n] of Object.entries(cost.raw||{}))parts.push(k+" "+n);for(const [k,n] of Object.entries(cost.goods||{}))parts.push(k+" "+n);if(cost.money)parts.push("通貨 "+fmt(cost.money));return parts.join(" · ")||"なし";}
+function hasCost(cost){return s.money>=(cost.money||0)&&Object.entries(cost.raw||{}).every(([k,n])=>(s.resources[k]||0)>=n)&&Object.entries(cost.goods||{}).every(([k,n])=>(s.goods[k]||0)>=n);}
+function payCost(cost){if(!hasCost(cost))return false;s.money-=cost.money||0;for(const [k,n] of Object.entries(cost.raw||{}))s.resources[k]-=n;for(const [k,n] of Object.entries(cost.goods||{}))s.goods[k]-=n;return true;}
+function renderIndustry(){
+ $("products").innerHTML=productNames.map(n=>`<div class="resource"><span>${n}</span><strong>${fmt(s.goods[n]||0)}</strong></div>`).join("");
+ $("recipes").innerHTML=recipes.map((r,i)=>{const unlocked=s.researched.includes(r.tech),cost={raw:r.raw||{},goods:r.goods||{}},disabled=!unlocked||!hasCost(cost);return `<div class="industry-row ${unlocked?"":"locked"}"><div><strong>${r.name}</strong><small>${costText(cost)} → ${Object.entries(r.out).map(([k,v])=>k+" "+v).join(", ")}${unlocked?"":" · 要研究："+technologyNames[r.tech]}</small></div><button data-recipe="${i}" ${disabled?"disabled":""}>加工</button></div>`;}).join("");
+ $("technologies").innerHTML=technologies.map(t=>{const done=s.researched.includes(t.id),ready=(t.requires||[]).every(id=>s.researched.includes(id)),disabled=done||!ready||!hasCost(t.cost);return `<div class="industry-row ${ready?"":"locked"}"><div><strong>${technologyNames[t.id]} ${done?"✓":""}</strong><small>${t.desc} · 必要資材：${costText(t.cost)}${!ready?" · 前提技術："+t.requires.map(x=>technologyNames[x]).join("・"):""}</small></div><button data-tech="${t.id}" ${disabled?"disabled":""}>${done?"研究済み":"研究"}</button></div>`;}).join("");
+ $("rocketCount").textContent=fmt(s.goods["ロケット"]||0)+"（打ち上げ "+fmt(s.rocketsLaunched||0)+" 回）";
+ $("launchRocket").disabled=!s.researched.includes("rocketry")||(s.goods["ロケット"]||0)<1;
+}
+function craftRecipe(index){const r=recipes[index];if(!r||!s.researched.includes(r.tech)||!payCost({raw:r.raw||{},goods:r.goods||{}}))return;for(const [k,n] of Object.entries(r.out))s.goods[k]=(s.goods[k]||0)+n;note(r.name+"を製造した。");render();}
+function researchTech(id){const t=technologies.find(x=>x.id===id);if(!t||s.researched.includes(id)||(t.requires||[]).some(x=>!s.researched.includes(x))||!payCost(t.cost))return;s.researched.push(id);note("技術研究を完了："+technologyNames[id]+"。");render();}
 function render(){
+ sanitizeState();
  $("money").textContent=fmt(s.money);$("gold").textContent=fmt(s.gold)+" g";$("bread").textContent=fmt(s.bread);
  $("workers").textContent=fmt(s.workers);$("power").textContent=fmt(s.power);
  const shortage=Math.max(0,s.politicalBurden-s.power);
@@ -168,24 +250,29 @@ function render(){
  $("recoverPower").disabled=s.money<recoveryAmount*POWER_RECOVERY_COST;
  $("recoverOne").disabled=s.money<POWER_RECOVERY_COST;$("recoverTen").disabled=s.money<10*POWER_RECOVERY_COST;
  $("recoverMax").disabled=s.money<POWER_RECOVERY_COST;
- const tax=s.tax?s.workers*.8:0;const upkeep=s.workers*.0875;
+ const tax=s.tax?s.workers*1.4:0;const upkeep=s.workers*.0875;
  $("income").textContent=(tax-upkeep>0?"+":"")+((tax-upkeep).toFixed(1))+" / 秒";
  $("ovenCost").textContent=fmt(25*Math.pow(1.35,s.ovens));$("workerCost").textContent=fmt(40*Math.pow(1.22,s.workers));
  $("taxStatus").textContent=s.tax?"導入済み":"未導入";$("taxIncome").textContent=fmt(tax)+" / 秒";
- $("powerBuildings").textContent=fmt(s.admins);$("era").textContent=s.totalMined>=250&&s.admins>=3?"産業国家":s.workers>=5||s.admins>=1?"都市国家":"村落";
+ $("powerBuildings").textContent=fmt(s.admins);$("era").textContent=(s.rocketsLaunched||0)>0?"宇宙時代":s.researched.includes("rocketry")?"宇宙開発準備":s.researched.includes("integrated_circuit")?"情報社会":s.researched.includes("electricity")?"電化社会":s.researched.includes("steam_power")?"産業革命":s.researched.includes("bronze_casting")?"青銅器時代":s.workers>=5||s.admins>=1?"都市国家":"村落";
  $("mineCost").textContent=fmt(s.mineCost);$("ovens").textContent=fmt(s.ovens);$("admins").textContent=fmt(s.admins);
  $("mineCount").textContent=fmt(s.mines.length);$("totalMined").textContent=fmt(s.totalMined);
  $("buyOven").disabled=s.money<25*Math.pow(1.35,s.ovens);
  $("buyWorker").disabled=s.money<40*Math.pow(1.22,s.workers);
  $("buyTax").disabled=s.tax||s.money<100;$("buyPower").disabled=s.money<150*Math.pow(1.5,s.admins);
  $("explore").disabled=s.money<s.mineCost;
+ $("surveyCost").textContent=fmt(Math.ceil(s.mineCost*1.5));$("survey").disabled=s.money<Math.ceil(s.mineCost*1.5);
  $("sellBread").disabled=s.bread<10;$("sellAllBread").disabled=s.bread<1;
  $("sellGold").disabled=s.gold<1;$("sellAllGold").disabled=s.gold<1;
  $("sellResources").disabled=resourceNames.every(n=>n==="金"||(s.resources[n]||0)<1);
- $("resources").innerHTML=resourceNames.map(n=>`<div class="resource"><span>${n}</span><strong>${fmt(s.resources[n]||0)}</strong></div>`).join("");
+ $("resources").innerHTML=resourceNames.map(n=>`<div class="resource"><span>${n} <small>· ${fmt(prices[n])} / 個</small></span><strong>${fmt(s.resources[n]||0)}</strong></div>`).join("");
  $("mines").innerHTML=s.mines.length?s.mines.map((m,i)=>`<div class="mine"><div class="mine-head"><span class="mine-name">${m.type}鉱山 <span class="tag">${m.remaining>0?"稼働中":"枯渇"}</span></span><strong>${fmt(m.remaining)} / ${fmt(m.capacity)}</strong></div><div class="progress"><span style="width:${Math.max(0,m.remaining/m.capacity*100)}%"></span></div><small>採掘速度：${m.rate.toFixed(1)} / 秒 · ${m.type==="金"?"金は資産として保管":"採掘資源"}</small></div>`).join(""):'<p class="muted">まだ鉱山は発見されていない。</p>';
  $("log").innerHTML=s.log.map(x=>`<div>${x.replaceAll("&","&amp;").replaceAll("<","&lt;")}</div>`).join("")||"<div>文明の歴史がここに記録される。</div>";
+ renderIndustry();
 }
+$("recipes").addEventListener("click",e=>{const b=e.target.closest("[data-recipe]");if(b)craftRecipe(Number(b.dataset.recipe));});
+$("technologies").addEventListener("click",e=>{const b=e.target.closest("[data-tech]");if(b)researchTech(b.dataset.tech);});
+$("launchRocket").onclick=()=>{if(!s.researched.includes("rocketry")||(s.goods["ロケット"]||0)<1)return;s.goods["ロケット"]--;s.rocketsLaunched=(s.rocketsLaunched||0)+1;note("ロケットを打ち上げた。宇宙時代が始まった！");render();};
 $("bake").onclick=()=>bake(1);
 $("sellBread").onclick=()=>sellBread(10);
 $("sellAllBread").onclick=()=>sellBread(s.bread);
@@ -193,8 +280,9 @@ $("buyOven").onclick=()=>{const c=Math.ceil(25*Math.pow(1.35,s.ovens));if(buy(c)
 $("buyWorker").onclick=()=>{const c=Math.ceil(40*Math.pow(1.22,s.workers));if(buy(c)){s.workers++;note("労働者を1人雇用した。");render();}};
 $("buyTax").onclick=()=>{if(!s.tax&&buy(100)){s.tax=true;note("税制を導入した。労働者から税収が発生する。");render();}};
 $("buyPower").onclick=()=>{const c=Math.ceil(150*Math.pow(1.5,s.admins));if(buy(c)){s.admins++;s.power+=10;note("行政機関を建設。国力が10増加した。");render();}};
-$("explore").onclick=()=>{if(!buy(s.mineCost))return;const type=weightedPick();const capacity=Math.floor((type==="金"?35:type==="鉄"?180:type==="銅"?130:100)*(0.7+Math.random()*.8));const rate=type==="金"?.7:.9+Math.random()*.8;const m={type,capacity,remaining:capacity,rate};s.mines.push(m);s.mineCost=Math.ceil(s.mineCost*1.65);note(`${type}鉱山を発見した！ 埋蔵量${capacity}。`);render();};
-$("sellGold").onclick=()=>{if(s.gold>=1){s.gold--;s.money+=prices["金"];note("金1 gを売却し、通貨80を得た。");render();}};
+$("explore").onclick=()=>discoverMine(weightedPick(),s.mineCost);
+$("survey").onclick=()=>discoverMine($("surveyResource").value,Math.ceil(s.mineCost*1.5));
+$("sellGold").onclick=()=>{if(s.gold>=1){s.gold--;s.money+=prices["金"];note("金1 gを売却し、通貨"+fmt(prices["金"])+"を得た。");render();}};
 $("sellResources").onclick=()=>{let total=0,items=0;for(const n of resourceNames){if(n==="金")continue;const amount=Math.floor(s.resources[n]||0);if(amount>0){s.resources[n]-=amount;total+=amount*prices[n];items+=amount;}}if(total>0){s.money+=total;note(fmt(items)+"個の資源を売却し、通貨"+fmt(total)+"を得た。");render();}};
 $("sellAllGold").onclick=()=>{const n=Math.floor(s.gold);if(n>0){s.gold-=n;s.money+=n*prices["金"];note(`金${n} gを売却し、通貨${fmt(n*prices["金"])}を得た。`);render();}};
 function recoverPower(amount){amount=Math.floor(Number(amount));if(!Number.isFinite(amount)||amount<1)return;const cost=amount*POWER_RECOVERY_COST;if(s.money<cost){note("通貨が足りないため、国力を回復できなかった。");render();return;}s.money-=cost;s.power+=amount;note(`通貨${fmt(cost)}を使い、国力を${fmt(amount)}回復した。`);render();}
@@ -205,7 +293,7 @@ $("recoverTen").onclick=()=>recoverPower(10);
 $("recoverMax").onclick=()=>recoverPower(Math.floor(s.money/POWER_RECOVERY_COST));
 $("save").onclick=()=>save();
 $("reset").onclick=()=>{if(confirm("セーブデータを消して最初から始めますか？")){localStorage.removeItem("goldClickerSave");s=fresh();note("新しい文明が始まった。");render();}};
-function simulate(seconds){const dt=Math.max(0,Number(seconds)||0);if(!dt)return;
+function simulate(seconds){sanitizeState();const rawDt=Number(seconds),dt=Number.isFinite(rawDt)?Math.max(0,rawDt):0;if(!dt)return;
  const burden=s.workers*2+s.ovens+s.admins*4+s.mines.filter(m=>m.remaining>0).length*10;
  s.politicalBurden=burden;
  const shortage=Math.max(0,burden-s.power);
@@ -213,10 +301,11 @@ function simulate(seconds){const dt=Math.max(0,Number(seconds)||0);if(!dt)return
  s.bread+=s.ovens*.8*efficiency*dt;
  const fed=s.workers===0?0:Math.min(s.workers,s.bread/(.35*dt));
  s.bread=Math.max(0,s.bread-fed*.35*dt);
- if(s.tax)s.money+=fed*.8*dt;
+ if(s.tax)s.money+=fed*1.4*dt;
  s.money=Math.max(0,s.money-s.workers*.0875*dt);
- s.power+=s.admins*.12*dt;
- for(const m of s.mines){if(m.remaining>0){const mined=Math.min(m.rate*efficiency*dt,m.remaining);m.remaining=Math.max(0,m.remaining-mined);s.resources[m.type]=(s.resources[m.type]||0)+mined;s.totalMined+=mined;if(m.type==="金")s.gold+=mined;}}
+ s.power+=(s.admins*.12+(s.goods["発電機"]||0)*.5)*dt;
+ const machineBonus=1+(s.goods["蒸気機関"]||0)*.1;
+ for(const m of s.mines){if(m.remaining>0){const mined=Math.min(m.rate*efficiency*machineBonus*dt,m.remaining);m.remaining=Math.max(0,m.remaining-mined);s.resources[m.type]=(s.resources[m.type]||0)+mined;s.totalMined+=mined;if(m.type==="金")s.gold+=mined;}}
 }
 let ticks=0;
 load();note("ゲームを開始した。まずはパンを作って売ろう。");render();
@@ -225,3 +314,4 @@ setInterval(()=>{simulate(1);ticks++;if(ticks%5===0)save(true);render();},1000);
 </script>
 </body>
 </html>
+
