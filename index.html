@@ -4,19 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>金クリッカー - Civilization Clicker</title>
-<link rel="stylesheet" href="css/game.css?v=1.0.3">
+<link rel="stylesheet" href="css/game.css?v=1.1.1">
 </head>
 <body>
 <header>
   <h1>金クリッカー</h1>
-  <p>パン屋から始めて、資源と産業を育て、文明を宇宙へ。</p>
+  <p>パンプガンダから労働力を生み、資源と産業を育て、文明を宇宙へ。</p>
   <div class="actions" style="justify-content:center"><button id="reset">最初から</button></div>
 </header>
 <main>
   <section class="stats">
     <div class="stat"><small>通貨</small><strong id="money">0</strong></div>
     <div class="stat"><small>金（資産）</small><strong class="gold" id="gold">0 g</strong></div>
-    <div class="stat"><small>パン</small><strong id="bread">0</strong></div>
+    <div class="stat"><small>パンプガンダ</small><strong id="panpuganda">0</strong></div>
     <div class="stat"><small>労働者</small><strong id="workers">0</strong></div>
     <div class="stat"><small>国力</small><strong id="power">0</strong></div>
     <div class="stat"><small>電力</small><strong id="electricity">0</strong></div>
@@ -37,19 +37,16 @@
   <section class="columns">
     <section class="tab-page" data-page="economy">
     <div class="panel">
-      <h2>🥖 パン屋</h2>
-      <button class="big primary" id="bake">🥖 パンを作る <small id="bakeAmount">(+1)</small></button>
+      <h2>🥖 パンプガンダ生産</h2>
+      <button class="big primary" id="makePanpuganda">🥖 パンプガンダを作る <small id="panpugandaAmount">(+1)</small></button>
+      
+      <p class="hint">パンプガンダはクリックで生産し、労働者を増やすために使う。</p>
+      <h3>人口の拡大</h3>
       <div class="actions">
-        <button id="sellBread">パンを10個売る</button>
-        <button id="sellAllBread">パンを全部売る</button>
+        
+        <button id="buyWorker">パンプガンダで労働者を増やす — <span id="workerCost">10</span></button>
       </div>
-      <p class="hint">パンはクリックで作れる。市場で売ると通貨になる。労働者の食料にも使う。</p>
-      <h3>生産設備</h3>
-      <div class="actions">
-        <button id="buyOven">かまどを買う — <span id="ovenCost">25</span></button>
-        <button id="buyWorker">労働者を雇う — <span id="workerCost">40</span></button>
-      </div>
-      <p class="hint">かまどは毎秒パンを生産。労働者はパンを消費し、税制の導入後に税収を生む。</p>
+      <p class="hint">パンプガンダを消費して労働者を増やす。労働者は食料を消費し、税制の導入後に税収を生む。</p>
     </div>
     </section>
     <section class="tab-page" data-page="labor" hidden>
@@ -125,7 +122,7 @@
       <h2>🏭 産業・開発</h2>
       <p>鉱石を精錬・加工して設備と研究に使おう。蒸気機関は採掘を速め、発電機は国力を支える。</p>
       <div class="resource-grid">
-        <div class="resource"><span>パン屋</span><strong id="ovens">0</strong></div>
+        
         <div class="resource"><span>行政機関</span><strong id="admins">0</strong></div>
         <div class="resource"><span>鉱山</span><strong id="mineCount">0</strong></div>
         <div class="resource"><span>総採掘量</span><strong id="totalMined">0</strong></div>
@@ -173,9 +170,9 @@
   </section>
   <footer>金クリッカー prototype 1.0 · タブ画面・電力・ウラン・蒸気機関車</footer>
 </main>
-<script src="js/tabs.js?v=1.0.3"></script>
-<script src="js/catalog.js?v=1.0.3"></script>
-<script src="js/game.js?v=1.0.3"></script>
+<script src="js/tabs.js?v=1.1.1"></script>
+<script src="js/catalog.js?v=1.1.1"></script>
+<script src="js/game.js?v=1.1.1"></script>
 </body>
 </html>
 
