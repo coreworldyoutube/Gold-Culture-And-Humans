@@ -45,7 +45,7 @@ function sanitizeState(){
 function fmt(n){const value=Number(n);return Math.floor(Number.isFinite(value)?value:0).toLocaleString("ja-JP");}
 function note(t){s.log.unshift(new Date().toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"})+" "+t);s.log=s.log.slice(0,35);}
 function save(silent=false){if(!silent)note("ゲームをセーブした。");s.lastSavedAt=Date.now();try{localStorage.setItem("goldClickerSave",JSON.stringify(s));}catch(e){note("保存に失敗した。ブラウザの保存容量を確認してください。");console.warn(e);}render();}
-function load(){try{const raw=localStorage.getItem("goldClickerSave");if(!raw)return;const d=JSON.parse(raw);if(!d||typeof d!=="object")throw new Error("セーブデータの形式が不正です");s={...fresh(),...d,panpuganda:finiteNonnegative(d.panpuganda??d.bread),resources:{...fresh().resources,...(d.resources||{})},goods:{...fresh().goods,...(d.goods||{})},researched:Array.isArray(d.researched)?d.researched:[],mines:Array.isArray(d.mines)?d.mines:[],log:Array.isArray(d.log)?d.log:[]};if(!d.schemaVersion||d.schemaVersion<2){s.power=Math.max(100,Number(d.power)||0);s.politicalBurden=Number(d.politicalBurden)||0;}s.schemaVersion=6;sanitizeState();const elapsed=Math.max(0,Math.min(BALANCE.offline.maxSimulationSeconds,(Date.now()-(Number(d.lastSavedAt)||Date.now()))/1000));if(elapsed>=1){simulate(elapsed);note("留守中の"+fmt(elapsed)+"秒分、生産を進めた。");}save(true);}catch(e){console.warn(e);note("セーブデータを読み込めなかったため、新しい状態で開始した。");s=fresh();}}
+function load(){try{const raw=localStorage.getItem("goldClickerSave");if(!raw)return;const d=JSON.parse(raw);if(!d||typeof d!=="object")throw new Error("セーブデータの形式が不正です");s={...fresh(),...d,panpuganda:finiteNonnegative(d.panpuganda??d.bread),resources:{...fresh().resources,...(d.resources||{})},goods:{...fresh().goods,...(d.goods||{})},researched:Array.isArray(d.researched)?d.researched:[],mines:Array.isArray(d.mines)?d.mines:[],log:Array.isArray(d.log)?d.log:[]};if(!d.schemaVersion||d.schemaVersion<2){s.power=Math.max(100,Number(d.power)||0);s.politicalBurden=Number(d.politicalBurden)||0;}s.schemaVersion=7;sanitizeState();const elapsed=Math.max(0,Math.min(BALANCE.offline.maxSimulationSeconds,(Date.now()-(Number(d.lastSavedAt)||Date.now()))/1000));if(elapsed>=1){simulate(elapsed);note("留守中の"+fmt(elapsed)+"秒分、生産を進めた。");}save(true);}catch(e){console.warn(e);note("セーブデータを読み込めなかったため、新しい状態で開始した。");s=fresh();}}
 function weightedPick(){let total=pool.reduce((a,x)=>a+x[1],0),r=Math.random()*total;for(const [n,w] of pool){r-=w;if(r<=0)return n;}return "鉄";}
 function mineChance(){const total=pool.reduce((sum,[,weight])=>sum+weight,0);return pool.map(([name,weight])=>`${name} ${(weight/total*100).toFixed(1)}%`).join(" / ");}
 function makePanpuganda(n=1){s.panpuganda+=n;render();}
@@ -98,6 +98,7 @@ function render(){
  sanitizeState();
   $("money").textContent=fmt(s.money);$("gold").textContent=fmt(s.gold)+" g";$("panpuganda").textContent=fmt(s.panpuganda);
   $("panpugandaAmount").textContent="(+"+fmt(BALANCE.panpuganda.clickProduction)+")";
+  updatePanpugandaSellPreview();
  $("taxCost").textContent=fmt(BALANCE.tax.unlockCost);
  $("adminCost").textContent=fmt(administrationPurchaseCost());
  $("powerHint").textContent="人口が増えると国力が徐々に低下。国力0で生産性-50%、100以上で最大+20%。通貨"+fmt(BALANCE.power.recoveryCostPerPoint)+"で回復できます。";
@@ -139,6 +140,21 @@ $("recipes").addEventListener("click",e=>{const b=e.target.closest("[data-recipe
 $("technologies").addEventListener("click",e=>{const b=e.target.closest("[data-tech]");if(b)researchTech(b.dataset.tech);});
 $("mines").addEventListener("click",e=>{const b=e.target.closest("[data-develop-mine]");if(b)developMine(Number(b.dataset.developMine));});
 $("launchRocket").onclick=()=>{if(!s.researched.includes("rocketry")||(s.goods["ロケット"]||0)<1)return;s.goods["ロケット"]--;s.rocketsLaunched=(s.rocketsLaunched||0)+1;note("ロケットを打ち上げた。宇宙時代が始まった！");render();};
+ function updatePanpugandaSellPreview(){
+  const stock=Math.floor(s.panpuganda),raw=Number($("panpugandaSellQuantity").value),qty=Math.floor(raw),price=BALANCE.panpuganda.sellPrice;
+  const valid=Number.isFinite(raw)&&qty>=1&&qty<=stock;
+  $("panpugandaSellPreview").textContent="所持："+fmt(stock)+" · 単価："+fmt(price)+" 通貨 · 売却額："+fmt(Math.max(0,qty)*price)+" 通貨";
+  $("sellPanpuganda").disabled=!valid;$("sellAllPanpuganda").disabled=stock<1;
+ }
+ function sellPanpuganda(all=false){
+  const stock=Math.floor(s.panpuganda),raw=Number($("panpugandaSellQuantity").value),qty=Math.min(stock,all?stock:Math.floor(raw));
+  if(!Number.isFinite(qty)||qty<1)return;
+  const revenue=qty*BALANCE.panpuganda.sellPrice;s.panpuganda-=qty;s.money+=revenue;
+  note("パンプガンダ"+fmt(qty)+"個を売却し、通貨"+fmt(revenue)+"を得た。");render();
+ }
+ $("panpugandaSellQuantity").addEventListener("input",updatePanpugandaSellPreview);
+ $("sellPanpuganda").onclick=()=>sellPanpuganda(false);
+ $("sellAllPanpuganda").onclick=()=>sellPanpuganda(true);
  $("makePanpuganda").onclick=()=>makePanpuganda(BALANCE.panpuganda.clickProduction);
  $("buyWorker").onclick=()=>{const c=Math.ceil(BALANCE.worker.panpugandaCost*Math.pow(BALANCE.worker.costMultiplier,s.workers));if(s.panpuganda>=c){s.panpuganda-=c;s.workers++;note("パンプガンダ"+fmt(c)+"個を使い、労働者を1人増やした。");render();}};
 $("buyTax").onclick=()=>{if(!s.tax&&buy(BALANCE.tax.unlockCost)){s.tax=true;note("税制を導入した。労働者から税収が発生する。");render();}};
