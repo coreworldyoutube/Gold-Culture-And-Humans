@@ -3,7 +3,7 @@
 const $ = id => document.getElementById(id);
 let BALANCE;
 try {
- const response=await fetch("data/balance.json?v=1.0.2",{cache:"no-store"});
+ const response=await fetch("data/balance.json?v=1.0.3",{cache:"no-store"});
  if(!response.ok)throw new Error("HTTP "+response.status);
  BALANCE=await response.json();
  if(!BALANCE||BALANCE.configVersion!==1)throw new Error("未対応の設定ファイルです");
@@ -22,7 +22,8 @@ const pool=BALANCE.mineDiscoveryWeights.map(item=>[item.resource,item.weight]);
 const POWER_RECOVERY_COST=BALANCE.power.recoveryCostPerPoint;
 const {productNames,technologyNames,technologyDescriptions}=window.GAME_CATALOG;
  const recipeSource=Array.isArray(BALANCE.recipes)?BALANCE.recipes:(BALANCE.recipes&&typeof BALANCE.recipes==="object"?Object.values(BALANCE.recipes):[]);
- const recipes=recipeSource.filter(recipe=>recipe&&typeof recipe==="object").map(recipe=>({...recipe,tech:recipe.technology||recipe.tech,out:recipe.output||recipe.out||{}}));
+ const recipeList=recipeSource.filter(recipe=>recipe&&typeof recipe==="object").map(recipe=>({...recipe,tech:recipe.technology||recipe.tech,out:recipe.output||recipe.out||{}}));
+ if(!Array.isArray(recipeList))throw new Error("レシピ一覧の初期化に失敗しました");
 const technologies=BALANCE.technologies.map(technology=>{const multiplier=BALANCE.researchCostMultipliers?.[technology.id]||1;const scale=cost=>({money:Math.ceil((cost.money||0)*multiplier),electricity:cost.electricity||0,raw:Object.fromEntries(Object.entries(cost.raw||{}).map(([k,v])=>[k,Math.ceil(v*multiplier)])),goods:Object.fromEntries(Object.entries(cost.goods||{}).map(([k,v])=>[k,Math.ceil(v*multiplier)]))});return {...technology,cost:scale(technology.cost),costMultiplier:multiplier,desc:technologyDescriptions[technology.id]||""};});
 const fresh=()=>({schemaVersion:6,lastSavedAt:Date.now(),...BALANCE.initial,goods:Object.fromEntries(productNames.map(n=>[n,0])),labor:Object.fromEntries(laborRoles.map(role=>[role,0])),researched:[],rocketsLaunched:0,resources:Object.fromEntries(resourceNames.map(n=>[n,0])),mines:[],totalMined:0,log:[]});
 let s = fresh();
@@ -87,12 +88,12 @@ function hasCost(cost){return s.money>=(cost.money||0)&&s.electricity>=(cost.ele
 function payCost(cost){if(!hasCost(cost))return false;s.money-=cost.money||0;s.electricity-=cost.electricity||0;for(const [k,n] of Object.entries(cost.raw||{}))s.resources[k]-=n;for(const [k,n] of Object.entries(cost.goods||{}))s.goods[k]-=n;return true;}
 function renderIndustry(){
  $("products").innerHTML=productNames.map(n=>`<div class="resource"><span>${n}</span><strong>${fmt(s.goods[n]||0)}</strong></div>`).join("");
- $("recipes").innerHTML=recipes.map((r,i)=>{const unlocked=s.researched.includes(r.tech),cost={raw:r.raw||{},goods:r.goods||{}},disabled=!unlocked||!hasCost(cost);return `<div class="industry-row ${unlocked?"":"locked"}"><div><strong>${r.name}</strong><small>${costText(cost)} → ${Object.entries(r.out).map(([k,v])=>k+" "+v).join(", ")}${unlocked?"":" · 要研究："+technologyNames[r.tech]}</small></div><button data-recipe="${i}" ${disabled?"disabled":""}>加工</button></div>`;}).join("");
+ $("recipes").innerHTML=(Array.isArray(recipeList)?recipeList:[]).map((r,i)=>{const unlocked=s.researched.includes(r.tech),cost={raw:r.raw||{},goods:r.goods||{}},disabled=!unlocked||!hasCost(cost);return `<div class="industry-row ${unlocked?"":"locked"}"><div><strong>${r.name}</strong><small>${costText(cost)} → ${Object.entries(r.out).map(([k,v])=>k+" "+v).join(", ")}${unlocked?"":" · 要研究："+technologyNames[r.tech]}</small></div><button data-recipe="${i}" ${disabled?"disabled":""}>加工</button></div>`;}).join("");
  $("technologies").innerHTML=technologies.map(t=>{const done=s.researched.includes(t.id),ready=(t.requires||[]).every(id=>s.researched.includes(id)),disabled=done||!ready||!hasCost(t.cost);return `<div class="industry-row ${ready?"":"locked"}"><div><strong>${technologyNames[t.id]} ${done?"✓":""}</strong><small>${t.desc} · 必要資材：${costText(t.cost)}${!ready?" · 前提技術："+t.requires.map(x=>technologyNames[x]).join("・"):""}</small></div><button data-tech="${t.id}" ${disabled?"disabled":""}>${done?"研究済み":"研究"}</button></div>`;}).join("");
  $("rocketCount").textContent=fmt(s.goods["ロケット"]||0)+"（打ち上げ "+fmt(s.rocketsLaunched||0)+" 回）";
  $("launchRocket").disabled=!s.researched.includes("rocketry")||(s.goods["ロケット"]||0)<1;
 }
-function craftRecipe(index){const r=recipes[index];if(!r||!s.researched.includes(r.tech)||!payCost({raw:r.raw||{},goods:r.goods||{}}))return;for(const [k,n] of Object.entries(r.out))s.goods[k]=(s.goods[k]||0)+n;note(r.name+"を製造した。");render();}
+function craftRecipe(index){const r=recipeList[index];if(!r||!s.researched.includes(r.tech)||!payCost({raw:r.raw||{},goods:r.goods||{}}))return;for(const [k,n] of Object.entries(r.out))s.goods[k]=(s.goods[k]||0)+n;note(r.name+"を製造した。");render();}
 function researchTech(id){const t=technologies.find(x=>x.id===id);if(!t||s.researched.includes(id)||(t.requires||[]).some(x=>!s.researched.includes(x))||!payCost(t.cost))return;s.researched.push(id);note("技術研究を完了："+technologyNames[id]+"（資源倍率 ×"+fmt(t.costMultiplier)+"）。");render();}
 function render(){
  sanitizeState();
