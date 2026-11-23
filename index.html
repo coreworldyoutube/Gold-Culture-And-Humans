@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>金クリッカー - Civilization Clicker</title>
-<link rel="stylesheet" href="css/game.css?v=1.1.1">
+<link rel="stylesheet" href="css/game.css?v=1.2.0">
 </head>
 <body>
 <header>
@@ -168,9 +168,55 @@
   </section>
   <footer>金クリッカー prototype 1.0 · タブ画面・電力・ウラン・蒸気機関車</footer>
 </main>
+
+<div id="debugLauncher"><button type="button" id="openDebug">パスワード</button></div>
+<div id="debugModal" class="debug-modal" hidden>
+  <div class="debug-dialog" role="dialog" aria-modal="true" aria-labelledby="debugTitle">
+    <button type="button" class="debug-close" id="closeDebug" aria-label="閉じる">×</button>
+    <h2 id="debugTitle">パスワード入力</h2>
+    <label class="debug-label" for="debugPassword">パスワード</label>
+    <input id="debugPassword" type="password" autocomplete="off" placeholder="文字を入力">
+    <p class="hint">入力内容は認証に使用しません。</p>
+    <button type="button" id="debugUnlockText" class="debug-unlock-text">パスワードの入力</button>
+    <p class="hint" id="debugClickCount">クリック回数：0 / 21</p>
+    <section id="debugControls" hidden>
+      <h3>デバッグモード</h3>
+      <p class="hint">数値を直接設定します。変更はセーブデータに保存されます。</p>
+      <div class="debug-grid">
+        <label>通貨<input type="number" min="0" step="1" data-debug-stat="money"></label>
+        <label>パンプガンダ<input type="number" min="0" step="1" data-debug-stat="panpuganda"></label>
+        <label>金（資産）<input type="number" min="0" step="1" data-debug-stat="gold"></label>
+        <label>労働者<input type="number" min="0" step="1" data-debug-stat="workers"></label>
+        <label>インフラ力<input type="number" min="0" step="1" data-debug-stat="infrastructure"></label>
+        <label>電力<input type="number" min="0" step="1" data-debug-stat="electricity"></label>
+      </div>
+      <button type="button" id="debugApplyStats">基本数値を反映</button>
+      <hr>
+      <h3>資源・加工品</h3>
+      <div class="debug-grid">
+        <label>種類<select id="debugItem"></select></label>
+        <label>数量<input id="debugItemAmount" type="number" min="0" step="1" value="1000"></label>
+      </div>
+      <div class="actions">
+        <button type="button" id="debugSetResource">資源を設定</button>
+        <button type="button" id="debugSetGoods">加工品を設定</button>
+      </div>
+      <hr>
+      <h3>研究</h3>
+      <label class="debug-wide">技術<select id="debugTechnology"></select></label>
+      <div class="actions">
+        <button type="button" id="debugResearchOne">選択した技術を解放</button>
+        <button type="button" id="debugResearchAll">全研究を解放</button>
+        <button type="button" id="debugResetResearch">研究をすべて未解放にする</button>
+      </div>
+      <p class="hint">研究の解放は前提条件・費用を無視します。</p>
+    </section>
+  </div>
+</div>
+
 <script src="js/tabs.js?v=1.1.1"></script>
 <script src="js/catalog.js?v=1.1.1"></script>
-<script src="js/game.js?v=1.2.0"></script>
+<script src="js/game.js?v=1.3.0"></script>
 </body>
 </html>
 
