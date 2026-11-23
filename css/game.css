@@ -1,0 +1,31 @@
+:root{color-scheme:dark;--bg:#10141b;--panel:#1b2330;--panel2:#242f3e;--line:#354255;--text:#edf2f7;--muted:#aab7c7;--gold:#f2c14e;--green:#74d99f;--red:#ff8585;--blue:#83b9ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#1b2b3b,#10141b 60%);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{padding:24px 18px 16px;text-align:center;border-bottom:1px solid var(--line);background:#111a25cc}
+h1{margin:0;color:var(--gold);font-size:clamp(28px,5vw,42px);letter-spacing:.08em}header p{margin:6px 0 0;color:var(--muted)}
+main{max-width:1100px;margin:20px auto;padding:0 14px 40px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin-bottom:16px}
+.stat,.panel{background:linear-gradient(145deg,var(--panel),#18202b);border:1px solid var(--line);border-radius:13px;padding:14px;box-shadow:0 8px 24px #0002}
+.stat small{display:block;color:var(--muted);font-size:12px}.stat strong{display:block;font-size:23px;margin-top:3px}.gold{color:var(--gold)}
+.columns{display:block}
+.tab-page{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.tab-page[hidden]{display:none}
+.tab-nav{display:flex;gap:8px;overflow-x:auto;padding:4px 1px 12px;margin-bottom:4px;scrollbar-width:thin}
+.tab-button{flex:0 0 auto;white-space:nowrap}
+.tab-button[aria-selected="true"]{background:linear-gradient(#a97b20,#765315);border-color:#d5a63d;color:#fff8df}.panel h2{font-size:18px;margin:0 0 10px}.panel h3{font-size:15px;margin:14px 0 6px;color:#dce6f2}
+button{border:1px solid #53657b;background:linear-gradient(#34465b,#263648);color:white;border-radius:9px;padding:10px 13px;font-weight:650;cursor:pointer;transition:.12s}
+button:hover:not(:disabled){filter:brightness(1.15);transform:translateY(-1px)}button:disabled{opacity:.38;cursor:not-allowed}
+.primary{background:linear-gradient(#a97b20,#765315);border-color:#d5a63d;color:#fff8df}
+.big{width:100%;padding:18px;font-size:19px;min-height:92px}.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}
+.muted{color:var(--muted)}.hint{font-size:12px;color:var(--muted);margin:8px 0 0}
+.progress{height:9px;background:#0e141c;border-radius:99px;overflow:hidden;margin:8px 0}.progress span{display:block;height:100%;background:linear-gradient(90deg,#c18b27,#f4d16b);width:0%}
+.exchange-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}.exchange-row input{width:110px;background:#0e141c;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px}.exchange-info{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}
+.exchange-row select{max-width:190px;background:#0e141c;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px}
+.resource-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.resource{display:flex;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:8px;background:#111923;border:1px solid #2d3948}
+.industry-list{display:grid;gap:7px;margin-top:8px}.industry-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;background:#111923;border:1px solid #2d3948}.industry-row>div{min-width:0}.industry-row strong{display:block}.industry-row small{display:block;color:var(--muted);font-size:12px}.industry-row button{flex:none;padding:8px 10px}.locked{opacity:.65}
+.mine{padding:10px;border-radius:9px;background:#111923;border:1px solid #344254;margin-top:8px}
+.mine-head{display:flex;justify-content:space-between;gap:8px;align-items:center}.mine-name{font-weight:700}.mine small{color:var(--muted)}
+.log{height:170px;overflow:auto;background:#0e141c;border:1px solid #2c3948;border-radius:9px;padding:9px;font-size:13px}
+.log div{padding:3px 0;border-bottom:1px solid #202b38}.tag{font-size:11px;color:var(--gold);border:1px solid #806326;border-radius:20px;padding:2px 7px}
+footer{text-align:center;color:var(--muted);font-size:12px;margin-top:18px}
+@media(max-width:760px){.tab-page{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
