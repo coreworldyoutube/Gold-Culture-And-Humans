@@ -196,7 +196,7 @@ let s = fresh();
 function finiteNonnegative(value,fallback=0){const n=Number(value);return Number.isFinite(n)&&n>=0?n:fallback;}
 function sanitizeState(){
  for(const key of ["money","gold","bread","workers","ovens","admins","power","politicalBurden","totalMined","mineCost","rocketsLaunched"])s[key]=finiteNonnegative(s[key],key==="power"?100:0);
- s.mineCost=Math.max(BALANCE.mine.baseExplorationCost,s.mineCost);
+ s.mineCost=BALANCE.mine.baseExplorationCost;
  s.resources=Object.fromEntries(resourceNames.map(n=>[n,finiteNonnegative(s.resources?.[n])]));
  s.goods=Object.fromEntries(productNames.map(n=>[n,finiteNonnegative(s.goods?.[n])]));
  s.mines=(Array.isArray(s.mines)?s.mines:[]).filter(m=>m&&resourceNames.includes(m.type)).map(m=>{const capacity=finiteNonnegative(m.capacity);return {...m,capacity,remaining:Math.min(capacity,finiteNonnegative(m.remaining)),rate:finiteNonnegative(m.rate),developed:m.developed!==false,depth:Math.max(1,Math.min(3,Math.floor(finiteNonnegative(m.depth,1)))),hardness:["soft","normal","hard"].includes(m.hardness)?m.hardness:"normal"};}).filter(m=>m.capacity>0);
@@ -260,7 +260,7 @@ function render(){
  $("buyWorker").disabled=s.money<BALANCE.worker.baseCost*Math.pow(BALANCE.worker.costMultiplier,s.workers);
  $("buyTax").disabled=s.tax||s.money<BALANCE.tax.unlockCost;$("buyPower").disabled=s.money<BALANCE.administration.baseCost*Math.pow(BALANCE.administration.costMultiplier,s.admins);
  $("explore").disabled=s.money<BALANCE.mine.baseExplorationCost;$("explore").textContent="鉱床を探査する";
- $("surveyCost").textContent=fmt(Math.ceil(s.mineCost*BALANCE.mine.targetedSurveyCostMultiplier));$("survey").disabled=mineLocked||s.money<Math.ceil(s.mineCost*BALANCE.mine.targetedSurveyCostMultiplier);
+ const surveyCost=Math.ceil(BALANCE.mine.baseExplorationCost*BALANCE.mine.targetedSurveyCostMultiplier);$("surveyCost").textContent=fmt(surveyCost);$("survey").disabled=s.money<surveyCost;
  $("sellBread").disabled=s.bread<10;$("sellAllBread").disabled=s.bread<1;
  $("sellGold").disabled=s.gold<1;$("sellAllGold").disabled=s.gold<1;
  $("sellResources").disabled=resourceNames.every(n=>n==="金"||(s.resources[n]||0)<1);
@@ -280,8 +280,8 @@ $("buyOven").onclick=()=>{const c=Math.ceil(BALANCE.oven.baseCost*Math.pow(BALAN
 $("buyWorker").onclick=()=>{const c=Math.ceil(BALANCE.worker.baseCost*Math.pow(BALANCE.worker.costMultiplier,s.workers));if(buy(c)){s.workers++;note("労働者を1人雇用した。");render();}};
 $("buyTax").onclick=()=>{if(!s.tax&&buy(BALANCE.tax.unlockCost)){s.tax=true;note("税制を導入した。労働者から税収が発生する。");render();}};
 $("buyPower").onclick=()=>{const c=Math.ceil(BALANCE.administration.baseCost*Math.pow(BALANCE.administration.costMultiplier,s.admins));if(buy(c)){s.admins++;s.power+=BALANCE.administration.powerGrantedOnPurchase;note("行政機関を建設。国力が10増加した。");render();}};
-$("explore").onclick=()=>discoverMine(weightedPick(),s.mineCost);
-$("survey").onclick=()=>discoverMine($("surveyResource").value,Math.ceil(s.mineCost*BALANCE.mine.targetedSurveyCostMultiplier));
+$("explore").onclick=()=>discoverMine(weightedPick(),BALANCE.mine.baseExplorationCost);
+$("survey").onclick=()=>discoverMine($("surveyResource").value,Math.ceil(BALANCE.mine.baseExplorationCost*BALANCE.mine.targetedSurveyCostMultiplier));
 function selectedStock(name){return name==="金"?s.gold:(s.resources[name]||0);}
  function updateSellPreview(){const name=$("sellResource").value||"鉄",stock=selectedStock(name),qty=Math.floor(Number($("sellQuantity").value)),valid=Number.isFinite(qty)&&qty>=1&&qty<=Math.floor(stock);$("sellPreview").textContent=`所持：${fmt(stock)} · 売却額：${fmt(Math.max(0,qty)*prices[name])} 通貨`;$("sellSelected").disabled=!valid;$("sellSelectedAll").disabled=stock<1;}
  function sellSelected(all=false){const name=$("sellResource").value,stock=selectedStock(name),requested=all?Math.floor(stock):Math.floor(Number($("sellQuantity").value)),qty=Math.min(stock,requested);if(!name||!Number.isFinite(qty)||qty<1)return;if(name==="金")s.gold-=qty;else s.resources[name]-=qty;const revenue=qty*prices[name];s.money+=revenue;note(`${name}を${fmt(qty)}個売却し、通貨${fmt(revenue)}を得た。`);render();}
