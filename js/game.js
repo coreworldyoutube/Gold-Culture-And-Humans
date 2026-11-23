@@ -164,6 +164,60 @@ $("sellResources").onclick=()=>{let total=0,items=0;for(const n of resourceNames
 $("sellAllGold").onclick=()=>{const n=Math.floor(s.gold);if(n>0){s.gold-=n;s.money+=n*prices["金"];note(`金${n} gを売却し、通貨${fmt(n*prices["金"])}を得た。`);render();}};
 function nextInfrastructureTarget(){const ratio=infrastructureRatio();const next=INFRASTRUCTURE_THRESHOLDS.find(t=>ratio<t.percent);return next?"次の段階："+next.percent+"%（クリック "+next.production+" 個）":"最大段階に到達";}
 $("save").onclick=()=>save();
+
+ // デバッグ画面：入力欄の文字列は認証に使わず、指定ラベルのクリック回数だけで解放する。
+ let debugClickCount=0;
+ const debugModal=$("debugModal");
+ $("openDebug").onclick=()=>{debugModal.hidden=false;$("debugPassword").focus();};
+ $("closeDebug").onclick=()=>{debugModal.hidden=true;};
+ debugModal.addEventListener("click",event=>{if(event.target===debugModal)debugModal.hidden=true;});
+ $("debugUnlockText").onclick=()=>{
+  debugClickCount++;
+  $("debugClickCount").textContent="クリック回数："+debugClickCount+" / 21";
+  if(debugClickCount>=21){
+   $("debugControls").hidden=false;
+   $("debugClickCount").textContent="デバッグモードを解放しました。";
+   refreshDebugInputs();
+  }
+ };
+ function refreshDebugInputs(){
+  for(const input of document.querySelectorAll("[data-debug-stat]"))input.value=finiteNonnegative(s[input.dataset.debugStat]);
+  const itemSelect=$("debugItem");
+  if(!itemSelect.options.length)itemSelect.innerHTML=[...resourceNames.map(n=>({value:"resource:"+n,label:"資源："+n})),...productNames.map(n=>({value:"goods:"+n,label:"加工品："+n}))].map(x=>'<option value="'+x.value+'">'+x.label+'</option>').join("");
+  const techSelect=$("debugTechnology");
+  if(!techSelect.options.length)techSelect.innerHTML=technologies.map(t=>'<option value="'+t.id+'">'+(technologyNames[t.id]||t.id)+'</option>').join("");
+ }
+ $("debugApplyStats").onclick=()=>{
+  for(const input of document.querySelectorAll("[data-debug-stat]"))s[input.dataset.debugStat]=finiteNonnegative(input.value);
+  note("デバッグ：基本数値を変更した。");save(true);
+ };
+ $("debugSetResource").onclick=()=>{
+  const [kind,name]=$("debugItem").value.split(":");
+  if(kind!=="resource"||!Object.prototype.hasOwnProperty.call(s.resources,name))return;
+  s.resources[name]=finiteNonnegative($("debugItemAmount").value);
+  note("デバッグ：資源「"+name+"」を設定した。");save(true);
+ };
+ $("debugSetGoods").onclick=()=>{
+  const [kind,name]=$("debugItem").value.split(":");
+  if(kind!=="goods"||!Object.prototype.hasOwnProperty.call(s.goods,name))return;
+  s.goods[name]=finiteNonnegative($("debugItemAmount").value);
+  note("デバッグ：加工品「"+name+"」を設定した。");save(true);
+ };
+ $("debugResearchOne").onclick=()=>{
+  const id=$("debugTechnology").value;
+  if(!technologies.some(t=>t.id===id))return;
+  if(!s.researched.includes(id))s.researched.push(id);
+  note("デバッグ：研究「"+(technologyNames[id]||id)+"」を解放した。");save(true);
+ };
+ $("debugResearchAll").onclick=()=>{
+  s.researched=technologies.map(t=>t.id);
+  note("デバッグ：すべての研究を解放した。");save(true);
+ };
+ $("debugResetResearch").onclick=()=>{
+  s.researched=[];
+  note("デバッグ：研究をすべて未解放にした。");save(true);
+ };
+
 $("reset").onclick=()=>{if(confirm("セーブデータを消して最初から始めますか？")){localStorage.removeItem("goldClickerSave");s=fresh();note("新しい文明が始まった。");render();}};
 function simulate(seconds){sanitizeState();const rawDt=Number(seconds),dt=Number.isFinite(rawDt)?Math.max(0,rawDt):0;if(!dt)return;
  const efficiency=1;
