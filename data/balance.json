@@ -7,8 +7,6 @@
     "workers": 0,
     "tax": false,
     "admins": 0,
-    "power": 100,
-    "politicalBurden": 0,
     "mineCost": 250,
     "electricity": 0,
     "panpuganda": 0
@@ -30,9 +28,6 @@
   "administration": {
     "baseCost": 150,
     "costMultiplier": 1.5,
-    "powerGrantedOnPurchase": 10,
-    "powerRecoveryPerSecond": 0.12,
-    "politicalBurden": 4,
     "steamLocomotiveDiscountPerUnit": 0.05,
     "steamLocomotiveDiscountCap": 0.5
   },
