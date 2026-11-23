@@ -181,9 +181,13 @@ function simulate(seconds){sanitizeState();const rawDt=Number(seconds),dt=Number
  s.politicalBurden=burden;
  const shortage=Math.max(0,burden-s.power);
  const efficiency=1+powerProductivityModifier();
- const fed=consumeFood(dt);
- if(s.tax)s.money+=fed*BALANCE.worker.taxIncomePerSecond*dt;
- s.money=Math.max(0,s.money-s.workers*BALANCE.worker.upkeepPerSecond*dt);
+ // 労働者の生産を先に反映し、同じシミュレーション区間で食料を利用できるようにする。
+ produceLabor(dt,efficiency);
+ consumeFood(dt);
+ // 税収は食料在庫に左右されない。税制導入済みなら全労働者から一定額を徴収する。
+ const taxRevenue=s.tax?s.workers*BALANCE.worker.taxIncomePerSecond*dt:0;
+ const workerUpkeep=s.workers*BALANCE.worker.upkeepPerSecond*dt;
+ s.money=Math.max(0,s.money+taxRevenue-workerUpkeep);
  s.power=Math.min(100,Math.max(0,s.power-s.workers*BALANCE.worker.populationPowerDrainPerSecond*dt)+(s.admins*BALANCE.administration.powerRecoveryPerSecond+(s.goods["発電機"]||0)*BALANCE.generator.powerRecoveryPerSecondPerUnit)*dt);
  const generatorCount=s.goods["発電機"]||0,reactorCount=s.goods["原子炉"]||0;
  const coalNeed=generatorCount*BALANCE.generator.coalConsumptionPerSecondPerUnit*dt,coalAvailable=s.resources["石炭"]||0;
@@ -193,7 +197,6 @@ function simulate(seconds){sanitizeState();const rawDt=Number(seconds),dt=Number
  const reactorFuelRatio=uraniumNeed>0?Math.min(1,uraniumAvailable/uraniumNeed):0,uraniumUsed=uraniumNeed*reactorFuelRatio;
  if(uraniumUsed>0)s.resources["ウラン"]-=uraniumUsed;
  s.electricity+=(generatorCount*BALANCE.generator.electricityPerSecondPerUnit*coalFuelRatio+reactorCount*BALANCE.generator.nuclearElectricityPerSecondPerUnit*reactorFuelRatio)*dt;
- produceLabor(dt,efficiency);
  const machineBonus=1+(s.goods["蒸気機関"]||0)*BALANCE.mine.steamEngineMiningRateBonusPerUnit;
  const miningWorkers=s.labor.mining,requiredMiners=Math.max(1,activeMineCount()*BALANCE.labor.mineWorkersPerFullRate),mineLaborFactor=Math.min(1,miningWorkers/requiredMiners);
  for(const m of s.mines){if(m.developed&&m.remaining>0&&mineLaborFactor>0){const mined=Math.min(m.rate*efficiency*machineBonus*mineLaborFactor*dt,m.remaining);m.remaining=Math.max(0,m.remaining-mined);if(m.type==="金")s.gold+=mined;else s.resources[m.type]=(s.resources[m.type]||0)+mined;s.totalMined+=mined;}}
