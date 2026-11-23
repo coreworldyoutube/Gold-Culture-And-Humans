@@ -21,6 +21,7 @@ const resourceNames=Object.keys(prices);
 const pool=BALANCE.mineDiscoveryWeights.map(item=>[item.resource,item.weight]);
 const POWER_RECOVERY_COST=BALANCE.power.recoveryCostPerPoint;
 const {productNames,technologyNames,technologyDescriptions}=window.GAME_CATALOG;
+ const recipes=BALANCE.recipes.map(recipe=>({...recipe,tech:recipe.technology,out:recipe.output}));
 const technologies=BALANCE.technologies.map(technology=>{const multiplier=BALANCE.researchCostMultipliers?.[technology.id]||1;const scale=cost=>({money:Math.ceil((cost.money||0)*multiplier),electricity:cost.electricity||0,raw:Object.fromEntries(Object.entries(cost.raw||{}).map(([k,v])=>[k,Math.ceil(v*multiplier)])),goods:Object.fromEntries(Object.entries(cost.goods||{}).map(([k,v])=>[k,Math.ceil(v*multiplier)]))});return {...technology,cost:scale(technology.cost),costMultiplier:multiplier,desc:technologyDescriptions[technology.id]||""};});
 const fresh=()=>({schemaVersion:6,lastSavedAt:Date.now(),...BALANCE.initial,goods:Object.fromEntries(productNames.map(n=>[n,0])),labor:Object.fromEntries(laborRoles.map(role=>[role,0])),researched:[],rocketsLaunched:0,resources:Object.fromEntries(resourceNames.map(n=>[n,0])),mines:[],totalMined:0,log:[]});
 let s = fresh();
