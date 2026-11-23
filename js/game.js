@@ -29,7 +29,7 @@ const fresh=()=>({schemaVersion:7,lastSavedAt:Date.now(),...BALANCE.initial,good
 let s = fresh();
 function finiteNonnegative(value,fallback=0){const n=Number(value);return Number.isFinite(n)&&n>=0?n:fallback;}
 function sanitizeState(){
- for(const key of ["money","gold","bread","workers","ovens","admins","power","electricity","politicalBurden","totalMined","mineCost","rocketsLaunched"])s[key]=finiteNonnegative(s[key],key==="power"?100:0);
+ for(const key of ["money","gold","panpuganda","workers","admins","power","electricity","politicalBurden","totalMined","mineCost","rocketsLaunched"])s[key]=finiteNonnegative(s[key],key==="power"?100:0);
  s.power=Math.min(100,s.power);
  s.mineCost=BALANCE.mine.baseExplorationCost;
  s.resources=Object.fromEntries(resourceNames.map(n=>[n,finiteNonnegative(s.resources?.[n])]));
@@ -79,7 +79,7 @@ function mineOne(m){if(m.remaining<=0||m.rate<=0)return;const amount=Math.min(m.
  }
  function consumeFood(dt){
   let needed=s.workers*BALANCE.worker.breadConsumptionPerSecond*dt,consumed=0;
-   for(const resource of ["パンプガンダ","小麦","肉"]){const stock=resource==="パンプガンダ"?s.panpuganda:(s.resources[resource]||0),used=Math.min(stock,needed);if(resource==="パンプガンダ")s.panpuganda-=used;else s.resources[resource]-=used;needed-=used;consumed+=used;if(needed<=0)break;}
+   for(const resource of ["小麦","肉"]){const stock=s.resources[resource]||0,used=Math.min(stock,needed);s.resources[resource]-=used;needed-=used;consumed+=used;if(needed<=0)break;}
   return dt>0?Math.min(s.workers,consumed/(BALANCE.worker.breadConsumptionPerSecond*dt)):0;
  }
 function costText(cost){const parts=[];for(const [k,n] of Object.entries(cost.raw||{}))parts.push(k+" "+n);for(const [k,n] of Object.entries(cost.goods||{}))parts.push(k+" "+n);if(cost.electricity)parts.push("電力 "+fmt(cost.electricity));if(cost.money)parts.push("通貨 "+fmt(cost.money));return parts.join(" · ")||"なし";}
