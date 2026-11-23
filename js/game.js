@@ -61,7 +61,13 @@ function mineOne(m){if(m.remaining<=0||m.rate<=0)return;const amount=Math.min(m.
  function setLabor(role,value){if(!laborRoles.includes(role))return;const others=allocatedWorkers()-s.labor[role],maximum=Math.max(0,s.workers-others);s.labor[role]=Math.min(maximum,Math.max(0,Math.floor(Number(value)||0)));note(laborLabels[role]+"に"+fmt(s.labor[role])+"人を配置した。");render();}
  function powerProductivityModifier(){const p=BALANCE.power,value=p.productivityModifierAtZero+(Math.max(0,s.power)/100)*(p.productivityModifierAtHundred-p.productivityModifierAtZero);return Math.max(p.productivityFloor,Math.min(p.productivityCap,value));}
  function administrationPurchaseCost(){const base=BALANCE.administration.baseCost*Math.pow(BALANCE.administration.costMultiplier,s.admins);const locomotives=s.goods["蒸気機関車"]||0;const discount=Math.min(BALANCE.administration.steamLocomotiveDiscountCap,locomotives*BALANCE.administration.steamLocomotiveDiscountPerUnit);return Math.max(1,Math.ceil(base*(1-discount)));}
- function electricityGenerationPerSecond(){return (s.goods["発電機"]||0)*BALANCE.generator.electricityPerSecondPerUnit+(s.goods["原子炉"]||0)*BALANCE.generator.nuclearElectricityPerSecondPerUnit;}
+ function electricityGenerationPerSecond(){
+  const generatorCount=s.goods["発電機"]||0,reactorCount=s.goods["原子炉"]||0;
+  const coalNeed=generatorCount*BALANCE.generator.coalConsumptionPerSecondPerUnit,uraniumNeed=reactorCount*BALANCE.generator.uraniumConsumptionPerSecondPerReactor;
+  const coalRatio=coalNeed>0?Math.min(1,(s.resources["石炭"]||0)/coalNeed):0;
+  const uraniumRatio=uraniumNeed>0?Math.min(1,(s.resources["ウラン"]||0)/uraniumNeed):0;
+  return generatorCount*BALANCE.generator.electricityPerSecondPerUnit*coalRatio+reactorCount*BALANCE.generator.nuclearElectricityPerSecondPerUnit*uraniumRatio;
+ }
  function produceLabor(dt,efficiency){
   const rates=BALANCE.labor.productionPerWorkerPerSecond;
   for(const role of ["forestry","mining","hunting","farming"]){for(const [resource,rate] of Object.entries(rates[role]||{})){s.resources[resource]=(s.resources[resource]||0)+s.labor[role]*rate*efficiency*dt;}}
@@ -167,10 +173,14 @@ function simulate(seconds){sanitizeState();const rawDt=Number(seconds),dt=Number
  if(s.tax)s.money+=fed*BALANCE.worker.taxIncomePerSecond*dt;
  s.money=Math.max(0,s.money-s.workers*BALANCE.worker.upkeepPerSecond*dt);
  s.power=Math.min(100,Math.max(0,s.power-s.workers*BALANCE.worker.populationPowerDrainPerSecond*dt)+(s.admins*BALANCE.administration.powerRecoveryPerSecond+(s.goods["発電機"]||0)*BALANCE.generator.powerRecoveryPerSecondPerUnit)*dt);
- const reactorCount=s.goods["原子炉"]||0,uraniumNeed=reactorCount*BALANCE.generator.uraniumConsumptionPerSecondPerReactor*dt;
- const uraniumAvailable=s.resources["ウラン"]||0,reactorFuelRatio=uraniumNeed>0?Math.min(1,uraniumAvailable/uraniumNeed):0;
- const uraniumUsed=uraniumNeed*reactorFuelRatio;if(uraniumUsed>0)s.resources["ウラン"]-=uraniumUsed;
- s.electricity+=((s.goods["発電機"]||0)*BALANCE.generator.electricityPerSecondPerUnit+reactorCount*BALANCE.generator.nuclearElectricityPerSecondPerUnit*reactorFuelRatio)*dt;
+ const generatorCount=s.goods["発電機"]||0,reactorCount=s.goods["原子炉"]||0;
+ const coalNeed=generatorCount*BALANCE.generator.coalConsumptionPerSecondPerUnit*dt,coalAvailable=s.resources["石炭"]||0;
+ const coalFuelRatio=coalNeed>0?Math.min(1,coalAvailable/coalNeed):0,coalUsed=coalNeed*coalFuelRatio;
+ if(coalUsed>0)s.resources["石炭"]-=coalUsed;
+ const uraniumNeed=reactorCount*BALANCE.generator.uraniumConsumptionPerSecondPerReactor*dt,uraniumAvailable=s.resources["ウラン"]||0;
+ const reactorFuelRatio=uraniumNeed>0?Math.min(1,uraniumAvailable/uraniumNeed):0,uraniumUsed=uraniumNeed*reactorFuelRatio;
+ if(uraniumUsed>0)s.resources["ウラン"]-=uraniumUsed;
+ s.electricity+=(generatorCount*BALANCE.generator.electricityPerSecondPerUnit*coalFuelRatio+reactorCount*BALANCE.generator.nuclearElectricityPerSecondPerUnit*reactorFuelRatio)*dt;
  produceLabor(dt,efficiency);
  const machineBonus=1+(s.goods["蒸気機関"]||0)*BALANCE.mine.steamEngineMiningRateBonusPerUnit;
  const miningWorkers=s.labor.mining,requiredMiners=Math.max(1,activeMineCount()*BALANCE.labor.mineWorkersPerFullRate),mineLaborFactor=Math.min(1,miningWorkers/requiredMiners);
