@@ -87,10 +87,12 @@
     },
     "dynamiteHardRockCostMultiplier": 0.6,
     "steamPowerDepthRequirement": 3,
-    "dynamiteMiningRateBonus": 0.25,
-    "railwayMiningRateBonus": 0.2,
-    "mechanizedDrillingRateBonus": 0.35,
-    "workersPerMineSlot": 500
+    "workersPerMineSlot": 500,
+    "geologicalSurveyExplorationDiscount": 0.25,
+    "mechanizedDrillingExplorationDiscount": 0.2,
+    "steamPowerDevelopmentDiscount": 0.2,
+    "railwayDevelopmentDiscount": 0.2,
+    "mechanizedDrillingDepthDiscount": 0.25
   },
   "generator": {
     "powerRecoveryPerSecondPerUnit": 0.5
@@ -402,6 +404,19 @@
       }
     },
     {
+      "id": "geological_survey",
+      "requires": [
+        "ironworking"
+      ],
+      "cost": {
+        "raw": {
+          "鉄": 8,
+          "銅": 8
+        },
+        "money": 500
+      }
+    },
+    {
       "id": "steelmaking",
       "requires": [
         "ironworking"
@@ -593,6 +608,7 @@
     "rocketry": 100000,
     "dynamite": 1,
     "mine_railway": 1,
-    "mechanized_drilling": 1
+    "mechanized_drilling": 1,
+    "geological_survey": 1
   }
 }
