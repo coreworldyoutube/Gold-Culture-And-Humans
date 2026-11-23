@@ -11,7 +11,8 @@
     "admins": 0,
     "power": 100,
     "politicalBurden": 0,
-    "mineCost": 250
+    "mineCost": 250,
+    "electricity": 0
   },
   "offline": {
     "maxSimulationSeconds": 28800
@@ -43,7 +44,9 @@
     "costMultiplier": 1.5,
     "powerGrantedOnPurchase": 10,
     "powerRecoveryPerSecond": 0.12,
-    "politicalBurden": 4
+    "politicalBurden": 4,
+    "steamLocomotiveDiscountPerUnit": 0.05,
+    "steamLocomotiveDiscountCap": 0.5
   },
   "power": {
     "recoveryCostPerPoint": 100,
@@ -67,7 +70,8 @@
       "copper": 80000,
       "gold": 30000,
       "coal": 100000,
-      "bauxite": 60000
+      "bauxite": 60000,
+      "uranium": 25000
     },
     "capacityRandomFactor": {
       "minimum": 0.8,
@@ -100,7 +104,10 @@
     "mechanizedDrillingDepthDiscount": 0.25
   },
   "generator": {
-    "powerRecoveryPerSecondPerUnit": 0.5
+    "powerRecoveryPerSecondPerUnit": 0.5,
+    "electricityPerSecondPerUnit": 2,
+    "nuclearElectricityPerSecondPerUnit": 30,
+    "uraniumConsumptionPerSecondPerReactor": 0.01
   },
   "resourcePrices": {
     "金": 20,
@@ -120,7 +127,8 @@
     "石": 1,
     "肉": 2,
     "皮革": 2,
-    "小麦": 1
+    "小麦": 1,
+    "ウラン": 12
   },
   "mineDiscoveryWeights": [
     {
@@ -173,6 +181,10 @@
     },
     {
       "resource": "ボーキサイト",
+      "weight": 2
+    },
+    {
+      "resource": "ウラン",
       "weight": 2
     }
   ],
@@ -371,6 +383,35 @@
         "ロケット": 1
       },
       "technology": "rocketry"
+    },
+    {
+      "name": "蒸気機関車",
+      "goods": {
+        "蒸気機関": 1,
+        "鋼材": 4,
+        "鉄インゴット": 4
+      },
+      "raw": {
+        "石炭": 10
+      },
+      "output": {
+        "蒸気機関車": 1
+      },
+      "technology": "steam_power"
+    },
+    {
+      "name": "原子炉",
+      "goods": {
+        "鋼材": 12,
+        "集積回路": 2
+      },
+      "raw": {
+        "ウラン": 20
+      },
+      "output": {
+        "原子炉": 1
+      },
+      "technology": "nuclear_power"
     }
   ],
   "technologies": [
@@ -511,7 +552,8 @@
         "goods": {
           "銅線": 4
         },
-        "money": 1500
+        "money": 1500,
+        "electricity": 100
       }
     },
     {
@@ -526,7 +568,8 @@
           "銅線": 6,
           "プラスチック": 2
         },
-        "money": 2500
+        "money": 2500,
+        "electricity": 250
       }
     },
     {
@@ -541,7 +584,8 @@
           "銅線": 8,
           "プラスチック": 4
         },
-        "money": 5000
+        "money": 5000,
+        "electricity": 500
       }
     },
     {
@@ -557,7 +601,8 @@
           "集積回路": 3,
           "ロケット燃料": 4
         },
-        "money": 10000
+        "money": 10000,
+        "electricity": 1000
       }
     },
     {
@@ -608,7 +653,42 @@
           "鋼材": 20,
           "発電機": 2
         },
-        "money": 25000
+        "money": 25000,
+        "electricity": 100
+      }
+    },
+    {
+      "id": "nuclear_power",
+      "requires": [
+        "integrated_circuit"
+      ],
+      "cost": {
+        "electricity": 1000,
+        "raw": {
+          "ウラン": 10
+        },
+        "goods": {
+          "鋼材": 5,
+          "集積回路": 1
+        },
+        "money": 30000
+      }
+    },
+    {
+      "id": "modern_science",
+      "requires": [
+        "nuclear_power",
+        "chemistry"
+      ],
+      "cost": {
+        "electricity": 5000,
+        "raw": {
+          "ウラン": 50
+        },
+        "goods": {
+          "集積回路": 10
+        },
+        "money": 100000
       }
     }
   ],
@@ -627,7 +707,9 @@
     "dynamite": 1,
     "mine_railway": 1,
     "mechanized_drilling": 1,
-    "geological_survey": 1
+    "geological_survey": 1,
+    "nuclear_power": 1,
+    "modern_science": 1
   },
   "labor": {
     "productionPerWorkerPerSecond": {
