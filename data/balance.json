@@ -1,40 +1,29 @@
 {
   "configVersion": 1,
-  "description": "人口・鉱床条件・採掘技術によって鉱山開発が進むバランス設定。",
+  "description": "パンプガンダを消費して労働力を増やす文明経済設定。",
   "initial": {
     "money": 0,
     "gold": 0,
-    "bread": 0,
     "workers": 0,
-    "ovens": 0,
     "tax": false,
     "admins": 0,
     "power": 100,
     "politicalBurden": 0,
     "mineCost": 250,
-    "electricity": 0
+    "electricity": 0,
+    "panpuganda": 0
   },
   "offline": {
     "maxSimulationSeconds": 28800
   },
-  "bread": {
-    "clickProduction": 1,
-    "sellPrice": 3
-  },
-  "oven": {
-    "baseCost": 25,
-    "costMultiplier": 1.08,
-    "breadProductionPerSecond": 10,
-    "politicalBurden": 1
-  },
   "worker": {
-    "baseCost": 40,
     "costMultiplier": 1.01,
     "taxIncomePerSecond": 1.4,
     "upkeepPerSecond": 0.0875,
     "breadConsumptionPerSecond": 0.35,
     "politicalBurden": 0.02,
-    "populationPowerDrainPerSecond": 0.0001
+    "populationPowerDrainPerSecond": 0.0001,
+    "panpugandaCost": 10
   },
   "tax": {
     "unlockCost": 100
@@ -732,5 +721,9 @@
       }
     },
     "mineWorkersPerFullRate": 10
+  },
+  "panpuganda": {
+    "clickProduction": 1,
+    "sellPrice": 3
   }
 }
