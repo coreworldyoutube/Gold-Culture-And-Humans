@@ -723,7 +723,6 @@
     "mineWorkersPerFullRate": 10
   },
   "panpuganda": {
-    "clickProduction": 1,
-    "sellPrice": 3
+    "clickProduction": 1
   }
 }
