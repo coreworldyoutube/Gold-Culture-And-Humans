@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "description": "パンプガンダを消費して労働力を増やす文明経済設定。",
+  "description": "パンプガンダを売却して通貨にするか、消費して労働力を増やす文明経済設定。",
   "initial": {
     "money": 0,
     "gold": 0,
@@ -723,6 +723,7 @@
     "mineWorkersPerFullRate": 10
   },
   "panpuganda": {
-    "clickProduction": 1
+    "clickProduction": 1,
+    "sellPrice": 1
   }
 }
