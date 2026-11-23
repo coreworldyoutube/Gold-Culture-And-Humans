@@ -37,7 +37,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:18px}
 .debug-modal{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:14px;background:#000b}
 .debug-modal[hidden]{display:none}
 .debug-dialog{position:relative;width:min(620px,100%);max-height:90vh;overflow:auto;padding:22px;background:#1b2330;border:1px solid #53657b;border-radius:14px;box-shadow:0 20px 70px #000b}
-.debug-dialog h2{margin:0 35px 14px 0;color:var(--gold)}
+.debug-dialog h2{margin:0 35px 14px 0;color:var(--gold);cursor:pointer;user-select:none}
 .debug-dialog h3{margin:16px 0 8px}
 .debug-close{position:absolute;right:12px;top:12px;padding:4px 11px;font-size:20px}
 .debug-label{display:block;margin-bottom:5px}
