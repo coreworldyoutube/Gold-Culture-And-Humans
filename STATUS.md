@@ -3,7 +3,7 @@
 - リポジトリ: [Gold-Culture-And-Humans](https://github.com/coreworldyoutube/Gold-Culture-And-Humans)
 - ゲーム名: 金クリッカー / Civilization Clicker
 - 確認したバージョン表示: Prototype 1.0
-- 現在の実装: `index.html` に画面構造、`css/game.css` にデザイン、`js/tabs.js` にタブ切替、`js/game.js` にゲーム処理、`data/balance.json` にバランス設定
+- 現在の実装: `index.html` に画面構造、`css/game.css` にデザイン、`js/tabs.js` にタブ切替、`js/catalog.js` に表示名・説明、`js/game.js` にゲーム処理、`data/balance.json` にバランス設定
 - セーブ方式: ブラウザのLocalStorage
 - セーブキー: `goldClickerSave`
 - セーブデータ形式: `schemaVersion: 6`
@@ -263,7 +263,7 @@ LocalStorageの `goldClickerSave` に保存する。
 - ゲーム内ログ
 - 最終保存時刻
 
-セーブデータには `schemaVersion: 4` が設定されている。オフライン経過時間は最大8時間までシミュレーションする。
+セーブデータには `schemaVersion: 6` が設定されている。オフライン経過時間は最大8時間までシミュレーションする。
 
 ## 8. Prototype 0.5 の追加内容
 
