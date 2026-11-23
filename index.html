@@ -18,7 +18,7 @@
     <div class="stat"><small>金（資産）</small><strong class="gold" id="gold">0 g</strong></div>
     <div class="stat"><small>パンプガンダ</small><strong id="panpuganda">0</strong></div>
     <div class="stat"><small>労働者</small><strong id="workers">0</strong></div>
-    <div class="stat"><small>国力</small><strong id="power">0</strong></div>
+    <div class="stat"><small>インフラ力</small><strong id="infrastructure">0</strong></div>
     <div class="stat"><small>電力</small><strong id="electricity">0</strong></div>
     <div class="stat"><small>毎秒の収支</small><strong id="income">0</strong></div>
   </section>
@@ -62,7 +62,7 @@
       <h2>👷 労働者の配置</h2>
       <p class="hint">雇用した労働者を5部門に割り当てる。割り当てていない人員は生産しない。</p>
       <div class="resource"><span>未割当</span><strong id="laborUnassigned">0 人</strong></div>
-      <div class="resource"><span>国力による生産補正</span><strong id="laborOutput">+20%</strong></div>
+      <div class="resource"><span>インフラによる生産補正</span><strong id="laborOutput">+20%</strong></div>
       <div class="exchange-row"><label for="labor-forestry">林業</label><input id="labor-forestry" data-labor-role="forestry" type="number" min="0" step="1" value="0"><strong id="labor-count-forestry">0 人</strong></div>
       <div class="exchange-row"><label for="labor-mining">採掘</label><input id="labor-mining" data-labor-role="mining" type="number" min="0" step="1" value="0"><strong id="labor-count-mining">0 人</strong></div>
       <div class="exchange-row"><label for="labor-hunting">狩猟</label><input id="labor-hunting" data-labor-role="hunting" type="number" min="0" step="1" value="0"><strong id="labor-count-hunting">0 人</strong></div>
@@ -77,31 +77,21 @@
       <div class="resource-grid">
         <div class="resource"><span>税制</span><strong id="taxStatus">未導入</strong></div>
         <div class="resource"><span>税収</span><strong id="taxIncome">0 / 秒</strong></div>
-        <div class="resource"><span>国力設備</span><strong id="powerBuildings">0</strong></div>
+        <div class="resource"><span>インフラ整備回数</span><strong id="powerBuildings">0</strong></div>
         <div class="resource"><span>国家段階</span><strong id="era">村落</strong></div>
       </div>
       <div class="actions">
         <button id="buyTax">税制を導入 — <span id="taxCost">100</span></button>
-        <button id="buyPower">行政機関を建設 — <span id="adminCost">150</span></button>
+        <button id="buyPower">インフラ整備 — <span id="adminCost">150</span></button>
       </div>
-      <p class="hint">税制を導入すると、労働者から毎秒税収を得る。行政機関は国力を増やす。</p>
-      <h3>国力の回復</h3>
+      <p class="hint">税制を導入すると、労働者から毎秒税収を得る。インフラ整備は人口に対するインフラ力を高め、パンプガンダのクリック生産量を増やす。</p>
+      <h3>インフラ力（カリスマ指数）</h3>
       <div class="exchange-info">
-        <div class="resource"><span>政治負担</span><strong id="burden">0</strong></div>
-        <div class="resource"><span>人口による国力減少</span><strong id="powerShortage">0</strong></div>
+        <div class="resource"><span>人口に対する整備率</span><strong id="infrastructureRatio">0%</strong></div>
+        <div class="resource"><span>クリック生産量</span><strong id="infrastructureEffect">1</strong></div>
       </div>
-      <p class="hint" id="powerHint">人口・施設・鉱山が政治負担を増やします。負担が国力を超えると生産効率が下がります。</p>
-      <div class="exchange-row">
-        <label for="powerAmount">回復する国力</label>
-        <input id="powerAmount" type="number" min="1" step="1" value="1">
-        <button id="recoverPower" class="primary">国力を回復</button>
-      </div>
-      <div class="actions">
-        <button id="recoverOne">+1 回復</button>
-        <button id="recoverTen">+10 回復</button>
-        <button id="recoverMax">可能な最大量</button>
-      </div>
-      <p class="hint" id="recoveryPreview">必要通貨：100</p>
+      <p class="hint" id="infrastructureHint">人口100人を基準に整備率を計算する。</p>
+      <p class="hint" id="infrastructureNext">次の段階：1%</p>
     </div>
     </section>
     <section class="tab-page" data-page="mines" hidden>
@@ -131,7 +121,7 @@
       <p>鉱石を精錬・加工して設備と研究に使おう。蒸気機関は採掘を速め、発電機は国力を支える。</p>
       <div class="resource-grid">
         
-        <div class="resource"><span>行政機関</span><strong id="admins">0</strong></div>
+        <div class="resource"><span>インフラ施設</span><strong id="admins">0</strong></div>
         <div class="resource"><span>鉱山</span><strong id="mineCount">0</strong></div>
         <div class="resource"><span>総採掘量</span><strong id="totalMined">0</strong></div>
       </div>
@@ -180,7 +170,7 @@
 </main>
 <script src="js/tabs.js?v=1.1.1"></script>
 <script src="js/catalog.js?v=1.1.1"></script>
-<script src="js/game.js?v=1.1.3"></script>
+<script src="js/game.js?v=1.2.0"></script>
 </body>
 </html>
 
