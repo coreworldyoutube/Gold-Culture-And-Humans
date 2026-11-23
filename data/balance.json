@@ -107,7 +107,8 @@
     "powerRecoveryPerSecondPerUnit": 0.5,
     "electricityPerSecondPerUnit": 2,
     "nuclearElectricityPerSecondPerUnit": 30,
-    "uraniumConsumptionPerSecondPerReactor": 0.01
+    "uraniumConsumptionPerSecondPerReactor": 0.01,
+    "coalConsumptionPerSecondPerUnit": 0.02
   },
   "resourcePrices": {
     "金": 20,
