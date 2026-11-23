@@ -74,40 +74,6 @@
       "otherRandomRange": 120
     },
     "steamEngineMiningRateBonusPerUnit": 0.1,
-    "populationMineLimits": [
-      {
-        "minWorkers": 0,
-        "maxMines": 0
-      },
-      {
-        "minWorkers": 500,
-        "maxMines": 1
-      },
-      {
-        "minWorkers": 1000,
-        "maxMines": 2
-      },
-      {
-        "minWorkers": 2500,
-        "maxMines": 4
-      },
-      {
-        "minWorkers": 5000,
-        "maxMines": 16
-      },
-      {
-        "minWorkers": 10000,
-        "maxMines": 32
-      },
-      {
-        "minWorkers": 25000,
-        "maxMines": 64
-      },
-      {
-        "minWorkers": 50000,
-        "maxMines": 128
-      }
-    ],
     "developmentBaseCost": 600,
     "depthCostMultipliers": {
       "1": 1,
@@ -123,7 +89,8 @@
     "steamPowerDepthRequirement": 3,
     "dynamiteMiningRateBonus": 0.25,
     "railwayMiningRateBonus": 0.2,
-    "mechanizedDrillingRateBonus": 0.35
+    "mechanizedDrillingRateBonus": 0.35,
+    "workersPerMineSlot": 500
   },
   "generator": {
     "powerRecoveryPerSecondPerUnit": 0.5
