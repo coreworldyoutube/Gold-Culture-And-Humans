@@ -40,7 +40,15 @@
       <h2>🥖 パンプガンダ生産</h2>
       <button class="big primary" id="makePanpuganda">🥖 パンプガンダを作る <small id="panpugandaAmount">(+1)</small></button>
       
-      <p class="hint">パンプガンダはクリックで生産し、労働者を増やすために使う。</p>
+      <p class="hint">パンプガンダは売却して通貨にするか、労働者を増やすために使える。</p>
+      <h3>パンプガンダの売却</h3>
+      <div class="exchange-row">
+        <label for="panpugandaSellQuantity">数量</label>
+        <input id="panpugandaSellQuantity" type="number" min="1" step="1" value="1">
+        <button id="sellPanpuganda" class="primary">指定数を売却</button>
+        <button id="sellAllPanpuganda">全部売却</button>
+      </div>
+      <p class="hint" id="panpugandaSellPreview">所持：0 · 売却額：0 通貨</p>
       <h3>人口の拡大</h3>
       <div class="actions">
         
