@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "description": "パンプガンダを売却して通貨にするか、消費して労働力を増やす文明経済設定。",
+  "description": "パンプガンダと人口、インフラ整備率によってクリック生産が増える文明経済設定。",
   "initial": {
     "money": 0,
     "gold": 0,
@@ -22,7 +22,6 @@
     "upkeepPerSecond": 0.0875,
     "breadConsumptionPerSecond": 0.35,
     "politicalBurden": 0.02,
-    "populationPowerDrainPerSecond": 0.0001,
     "panpugandaCost": 10
   },
   "tax": {
@@ -37,16 +36,14 @@
     "steamLocomotiveDiscountPerUnit": 0.05,
     "steamLocomotiveDiscountCap": 0.5
   },
-  "power": {
-    "recoveryCostPerPoint": 100,
-    "efficiency": {
-      "minimum": 0.25,
-      "shortagePenaltyMultiplier": 0.75
-    },
-    "productivityModifierAtZero": -0.5,
-    "productivityModifierAtHundred": 0.2,
-    "productivityCap": 0.2,
-    "productivityFloor": -0.5
+  "infrastructure": {
+    "pointsPerProject": 1,
+    "clickBonusThresholds": [
+      {"percent": 1, "production": 3},
+      {"percent": 3, "production": 5},
+      {"percent": 5, "production": 7},
+      {"percent": 10, "production": 9}
+    ]
   },
   "mine": {
     "baseExplorationCost": 250,
