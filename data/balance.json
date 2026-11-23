@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "description": "人口拡大・大規模採掘・研究資源インフレに対応したバランス設定。",
+  "description": "人口・鉱床条件・採掘技術によって鉱山開発が進むバランス設定。",
   "initial": {
     "money": 0,
     "gold": 0,
@@ -53,7 +53,7 @@
   },
   "mine": {
     "baseExplorationCost": 250,
-    "explorationCostMultiplier": 1.03,
+    "explorationCostMultiplier": 1,
     "targetedSurveyCostMultiplier": 1.5,
     "politicalBurdenPerActiveMine": 10,
     "capacityBase": {
@@ -107,7 +107,23 @@
         "minWorkers": 50000,
         "maxMines": 128
       }
-    ]
+    ],
+    "developmentBaseCost": 600,
+    "depthCostMultipliers": {
+      "1": 1,
+      "2": 2,
+      "3": 4
+    },
+    "hardnessCostMultipliers": {
+      "soft": 1,
+      "normal": 1.5,
+      "hard": 3
+    },
+    "dynamiteHardRockCostMultiplier": 0.6,
+    "steamPowerDepthRequirement": 3,
+    "dynamiteMiningRateBonus": 0.25,
+    "railwayMiningRateBonus": 0.2,
+    "mechanizedDrillingRateBonus": 0.35
   },
   "generator": {
     "powerRecoveryPerSecondPerUnit": 0.5
@@ -543,6 +559,57 @@
         },
         "money": 10000
       }
+    },
+    {
+      "id": "dynamite",
+      "requires": [
+        "steam_power",
+        "chemistry"
+      ],
+      "cost": {
+        "raw": {
+          "石油": 30,
+          "石炭": 50
+        },
+        "goods": {
+          "鋼材": 10
+        },
+        "money": 12000
+      }
+    },
+    {
+      "id": "mine_railway",
+      "requires": [
+        "steam_power"
+      ],
+      "cost": {
+        "raw": {
+          "鉄": 100,
+          "石炭": 80
+        },
+        "goods": {
+          "鋼材": 12
+        },
+        "money": 8000
+      }
+    },
+    {
+      "id": "mechanized_drilling",
+      "requires": [
+        "electricity",
+        "dynamite"
+      ],
+      "cost": {
+        "raw": {
+          "石油": 60,
+          "鉄": 100
+        },
+        "goods": {
+          "鋼材": 20,
+          "発電機": 2
+        },
+        "money": 25000
+      }
     }
   ],
   "researchCostMultipliers": {
@@ -556,6 +623,9 @@
     "semiconductors": 5000,
     "transistor": 10000,
     "integrated_circuit": 50000,
-    "rocketry": 100000
+    "rocketry": 100000,
+    "dynamite": 1,
+    "mine_railway": 1,
+    "mechanized_drilling": 1
   }
 }
