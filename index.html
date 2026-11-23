@@ -104,7 +104,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:18px}
       <button class="primary" id="explore">鉱床を探査する</button>
       <div class="exchange-row"><label for="surveyResource">鉱物を指定</label><select id="surveyResource"><option>銅</option><option>錫</option><option>鉄</option><option>石炭</option><option>石英</option><option>石油</option><option>ボーキサイト</option><option>鉛</option><option>タングステン</option><option>銀</option><option>金</option><option>琥珀</option><option>ダイヤモンド</option></select><button id="survey">指定調査 — <span id="surveyCost">375</span></button></div>
       <p class="hint">指定探査はランダム探査より50%高額。人口枠は開発済み鉱山に適用される。未開発の鉱床は投資するまで採掘しない。</p>
-      <p class="hint" id="mineLimitHint">鉱山枠は労働者数で決まる。蒸気機関は深い鉱床、ダイナマイトは硬岩鉱床の開発を可能にする。</p><p class="hint">探査費用は一律。開発投資は深度と岩盤の硬さによって変わる。</p>
+      <p class="hint" id="mineLimitHint">労働者500人につき開発可能な鉱山が1か所増える。蒸気機関は深い鉱床、ダイナマイトは硬岩鉱床の開発を可能にする。</p><p class="hint">探査費用は一律。開発投資は深度と岩盤の硬さによって変わる。</p>
       <div id="mines"><p class="muted">まだ鉱山は発見されていない。</p></div>
     </div>
 
@@ -152,7 +152,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:18px}
       <p class="hint">このブラウザのLocalStorageに自動保存される。</p>
     </div>
   </section>
-  <footer>金クリッカー prototype 0.6 · 地質探査・鉱山投資・採掘技術</footer>
+  <footer>金クリッカー prototype 0.7 · 地質探査・鉱山投資・採掘技術</footer>
 </main>
 <script>
 (async () => {
@@ -218,8 +218,8 @@ function activeMineCount(){return s.mines.filter(m=>m.developed&&m.remaining>0).
 function mineDevelopmentCost(m){const depth=BALANCE.mine.depthCostMultipliers[String(m.depth)]||1;let hardness=BALANCE.mine.hardnessCostMultipliers[m.hardness]||1;if(m.hardness==="hard"&&s.researched.includes("dynamite"))hardness*=BALANCE.mine.dynamiteHardRockCostMultiplier;return Math.ceil(BALANCE.mine.developmentBaseCost*depth*hardness);}
 function mineRequirement(m){if(m.hardness==="hard"&&!s.researched.includes("dynamite"))return "ダイナマイト研究が必要";if(m.depth>=BALANCE.mine.steamPowerDepthRequirement&&!s.researched.includes("steam_power"))return "蒸気機関研究が必要";return "";}
 function developMine(index){const m=s.mines[index];if(!m||m.developed||m.remaining<=0||activeMineCount()>=mineLimitForPopulation())return;const requirement=mineRequirement(m);if(requirement){note(requirement+"。");render();return;}const cost=mineDevelopmentCost(m);if(!buy(cost)){note("鉱山開発の投資資金が足りない。");render();return;}m.developed=true;note(m.type+"鉱山の開発を完了。投資額："+fmt(cost)+"。");render();}
-function mineLimitForPopulation(){let limit=0;for(const tier of BALANCE.mine.populationMineLimits||[]){if(s.workers>=tier.minWorkers)limit=tier.maxMines;}return limit;}
- function nextMineThreshold(){return (BALANCE.mine.populationMineLimits||[]).find(t=>t.minWorkers>s.workers)||null;}
+function mineLimitForPopulation(){return Math.floor(s.workers/BALANCE.mine.workersPerMineSlot);}
+ function nextMineThreshold(){const nextWorkers=(Math.floor(s.workers/BALANCE.mine.workersPerMineSlot)+1)*BALANCE.mine.workersPerMineSlot;return {minWorkers:nextWorkers,maxMines:nextWorkers/BALANCE.mine.workersPerMineSlot};}
  function discoverMine(type,cost){if(!resourceNames.includes(type)||!buy(cost))return;const capacityKey=({"鉄":"iron","銅":"copper","金":"gold","石炭":"coal","ボーキサイト":"bauxite"})[type]||"default";const base=BALANCE.mine.capacityBase[capacityKey];const capacity=Math.floor(base*(BALANCE.mine.capacityRandomFactor.minimum+Math.random()*BALANCE.mine.capacityRandomFactor.range));const rate=type==="金"?BALANCE.mine.miningRatePerSecond.gold:BALANCE.mine.miningRatePerSecond.otherMinimum+Math.random()*BALANCE.mine.miningRatePerSecond.otherRandomRange;const depth=1+Math.floor(Math.random()*3),hardness=["soft","normal","hard"][Math.floor(Math.random()*3)];const m={type,capacity,remaining:capacity,rate,depth,hardness,developed:false};s.mines.push(m);note(type+"鉱床を発見！ 深度"+depth+"・"+({soft:"軟岩",normal:"通常岩盤",hard:"硬岩"}[hardness])+"。開発投資が必要。");render();}
 function mineOne(m){if(m.remaining<=0||m.rate<=0)return;const amount=Math.min(m.rate,m.remaining);m.remaining-=amount;s.resources[m.type]+=amount;s.totalMined+=amount;}
 function costText(cost){const parts=[];for(const [k,n] of Object.entries(cost.raw||{}))parts.push(k+" "+n);for(const [k,n] of Object.entries(cost.goods||{}))parts.push(k+" "+n);if(cost.money)parts.push("通貨 "+fmt(cost.money));return parts.join(" · ")||"なし";}
