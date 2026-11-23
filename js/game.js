@@ -171,7 +171,7 @@ $("save").onclick=()=>save();
  $("openDebug").onclick=()=>{debugModal.hidden=false;$("debugPassword").focus();};
  $("closeDebug").onclick=()=>{debugModal.hidden=true;};
  debugModal.addEventListener("click",event=>{if(event.target===debugModal)debugModal.hidden=true;});
- $("debugUnlockText").onclick=()=>{
+ $("debugTitle").onclick=()=>{
   debugClickCount++;
   if(debugClickCount>=21){
    $("debugControls").hidden=false;
