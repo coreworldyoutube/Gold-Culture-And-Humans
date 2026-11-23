@@ -32,7 +32,8 @@
     "taxIncomePerSecond": 1.4,
     "upkeepPerSecond": 0.0875,
     "breadConsumptionPerSecond": 0.35,
-    "politicalBurden": 0.02
+    "politicalBurden": 0.02,
+    "populationPowerDrainPerSecond": 0.0001
   },
   "tax": {
     "unlockCost": 100
@@ -49,7 +50,11 @@
     "efficiency": {
       "minimum": 0.25,
       "shortagePenaltyMultiplier": 0.75
-    }
+    },
+    "productivityModifierAtZero": -0.5,
+    "productivityModifierAtHundred": 0.2,
+    "productivityCap": 0.2,
+    "productivityFloor": -0.5
   },
   "mine": {
     "baseExplorationCost": 250,
@@ -110,7 +115,12 @@
     "銀": 5,
     "石英": 2,
     "石炭": 1,
-    "ボーキサイト": 1
+    "ボーキサイト": 1,
+    "木材": 1,
+    "石": 1,
+    "肉": 2,
+    "皮革": 2,
+    "小麦": 1
   },
   "mineDiscoveryWeights": [
     {
@@ -369,7 +379,9 @@
       "cost": {
         "raw": {
           "銅": 2,
-          "石炭": 1
+          "石炭": 1,
+          "木材": 5,
+          "石": 5
         },
         "money": 50
       }
@@ -384,7 +396,11 @@
           "銅インゴット": 9,
           "錫インゴット": 1
         },
-        "money": 100
+        "money": 100,
+        "raw": {
+          "木材": 10,
+          "石": 10
+        }
       }
     },
     {
@@ -398,7 +414,9 @@
         },
         "raw": {
           "鉄": 2,
-          "石炭": 3
+          "石炭": 3,
+          "木材": 15,
+          "石": 15
         },
         "money": 200
       }
@@ -610,5 +628,26 @@
     "mine_railway": 1,
     "mechanized_drilling": 1,
     "geological_survey": 1
+  },
+  "labor": {
+    "productionPerWorkerPerSecond": {
+      "forestry": {
+        "木材": 0.08
+      },
+      "mining": {
+        "石": 0.08
+      },
+      "hunting": {
+        "肉": 0.04,
+        "皮革": 0.008
+      },
+      "farming": {
+        "小麦": 0.08
+      },
+      "processing": {
+        "建材": 0.025
+      }
+    },
+    "mineWorkersPerFullRate": 10
   }
 }
