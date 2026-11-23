@@ -95,7 +95,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:18px}
       <h3>国力の回復</h3>
       <div class="exchange-info">
         <div class="resource"><span>政治負担</span><strong id="burden">0</strong></div>
-        <div class="resource"><span>国力不足</span><strong id="powerShortage">0</strong></div>
+        <div class="resource"><span>人口による国力減少</span><strong id="powerShortage">0</strong></div>
       </div>
       <p class="hint" id="powerHint">人口・施設・鉱山が政治負担を増やします。負担が国力を超えると生産効率が下がります。</p>
       <div class="exchange-row">
@@ -213,6 +213,7 @@ let s = fresh();
 function finiteNonnegative(value,fallback=0){const n=Number(value);return Number.isFinite(n)&&n>=0?n:fallback;}
 function sanitizeState(){
  for(const key of ["money","gold","bread","workers","ovens","admins","power","politicalBurden","totalMined","mineCost","rocketsLaunched"])s[key]=finiteNonnegative(s[key],key==="power"?100:0);
+ s.power=Math.min(100,s.power);
  s.mineCost=BALANCE.mine.baseExplorationCost;
  s.resources=Object.fromEntries(resourceNames.map(n=>[n,finiteNonnegative(s.resources?.[n])]));
  s.goods=Object.fromEntries(productNames.map(n=>[n,finiteNonnegative(s.goods?.[n])]));
@@ -281,7 +282,7 @@ function render(){
  $("laborUnassigned").textContent=fmt(unassigned)+" 人";$("laborOutput").textContent="生産性 "+(modifier>=0?"+":"")+(modifier*100).toFixed(1)+"%";
  for(const role of laborRoles){const input=$("labor-"+role);if(input&&document.activeElement!==input)input.value=s.labor[role];const count=$("labor-count-"+role);if(count)count.textContent=fmt(s.labor[role])+" 人";}
  const shortage=Math.max(0,s.politicalBurden-s.power);
- $("burden").textContent=fmt(s.politicalBurden);$("powerShortage").textContent=fmt(shortage);
+ $("burden").textContent=fmt(s.politicalBurden);$("powerShortage").textContent=(s.workers*BALANCE.worker.populationPowerDrainPerSecond).toFixed(3)+" / 秒";
  const recoveryAmount=Math.max(1,Math.floor(Number($("powerAmount").value)||1));
  $("recoveryPreview").textContent=`必要通貨：${fmt(recoveryAmount*POWER_RECOVERY_COST)}（現在の所持通貨で${fmt(Math.floor(s.money/BALANCE.power.recoveryCostPerPoint))}まで回復可能）`;
  $("recoverPower").disabled=s.money<recoveryAmount*POWER_RECOVERY_COST;
@@ -318,7 +319,7 @@ $("sellAllBread").onclick=()=>sellBread(s.bread);
 $("buyOven").onclick=()=>{const c=Math.ceil(BALANCE.oven.baseCost*Math.pow(BALANCE.oven.costMultiplier,s.ovens));if(buy(c)){s.ovens++;note("かまどを購入した。");render();}};
 $("buyWorker").onclick=()=>{const c=Math.ceil(BALANCE.worker.baseCost*Math.pow(BALANCE.worker.costMultiplier,s.workers));if(buy(c)){s.workers++;note("労働者を1人雇用した。");render();}};
 $("buyTax").onclick=()=>{if(!s.tax&&buy(BALANCE.tax.unlockCost)){s.tax=true;note("税制を導入した。労働者から税収が発生する。");render();}};
-$("buyPower").onclick=()=>{const c=Math.ceil(BALANCE.administration.baseCost*Math.pow(BALANCE.administration.costMultiplier,s.admins));if(buy(c)){s.admins++;s.power+=BALANCE.administration.powerGrantedOnPurchase;note("行政機関を建設。国力が10増加した。");render();}};
+$("buyPower").onclick=()=>{const c=Math.ceil(BALANCE.administration.baseCost*Math.pow(BALANCE.administration.costMultiplier,s.admins));if(buy(c)){s.admins++;s.power=Math.min(100,s.power+BALANCE.administration.powerGrantedOnPurchase);note("行政機関を建設。国力が回復した。");render();}};
 $("explore").onclick=()=>discoverMine(weightedPick(),mineExplorationCost());
 $("survey").onclick=()=>discoverMine($("surveyResource").value,mineExplorationCost(true));
 function selectedStock(name){return name==="金"?s.gold:(s.resources[name]||0);}
@@ -328,7 +329,7 @@ function selectedStock(name){return name==="金"?s.gold:(s.resources[name]||0);}
  $("sellGold").onclick=()=>{if(s.gold>=1){s.gold--;s.money+=prices["金"];note("金1 gを売却し、通貨"+fmt(prices["金"])+"を得た。");render();}};
 $("sellResources").onclick=()=>{let total=0,items=0;for(const n of resourceNames){if(n==="金")continue;const amount=Math.floor(s.resources[n]||0);if(amount>0){s.resources[n]-=amount;total+=amount*prices[n];items+=amount;}}if(total>0){s.money+=total;note(fmt(items)+"個の資源を売却し、通貨"+fmt(total)+"を得た。");render();}};
 $("sellAllGold").onclick=()=>{const n=Math.floor(s.gold);if(n>0){s.gold-=n;s.money+=n*prices["金"];note(`金${n} gを売却し、通貨${fmt(n*prices["金"])}を得た。`);render();}};
-function recoverPower(amount){amount=Math.floor(Number(amount));if(!Number.isFinite(amount)||amount<1)return;const cost=amount*BALANCE.power.recoveryCostPerPoint;if(s.money<cost){note("通貨が足りないため、国力を回復できなかった。");render();return;}s.money-=cost;s.power+=amount;note(`通貨${fmt(cost)}を使い、国力を${fmt(amount)}回復した。`);render();}
+function recoverPower(amount){amount=Math.floor(Number(amount));if(!Number.isFinite(amount)||amount<1)return;const recoverable=Math.min(amount,100-s.power);if(recoverable<1)return;const cost=recoverable*BALANCE.power.recoveryCostPerPoint;if(s.money<cost){note("通貨が足りないため、国力を回復できなかった。");render();return;}s.money-=cost;s.power=Math.min(100,s.power+recoverable);note(`通貨${fmt(cost)}を使い、国力を${fmt(recoverable)}回復した。`);render();}
 $("powerAmount").addEventListener("input",()=>{const v=Math.floor(Number($("powerAmount").value));$("recoverPower").disabled=!Number.isFinite(v)||v<1||s.money<v*POWER_RECOVERY_COST;$("recoveryPreview").textContent=v>0?`必要通貨：${fmt(v*POWER_RECOVERY_COST)}（現在の所持通貨で${fmt(Math.floor(s.money/POWER_RECOVERY_COST))}まで回復可能）`:"1以上の整数を入力してください。";});
 $("recoverPower").onclick=()=>recoverPower($("powerAmount").value);
 $("recoverOne").onclick=()=>recoverPower(1);
@@ -340,13 +341,12 @@ function simulate(seconds){sanitizeState();const rawDt=Number(seconds),dt=Number
  const burden=s.workers*BALANCE.worker.politicalBurden+s.ovens*BALANCE.oven.politicalBurden+s.admins*BALANCE.administration.politicalBurden+s.mines.filter(m=>m.developed&&m.remaining>0).length*BALANCE.mine.politicalBurdenPerActiveMine;
  s.politicalBurden=burden;
  const shortage=Math.max(0,burden-s.power);
- const efficiency=burden===0?1:Math.max(BALANCE.power.efficiency.minimum,1-(shortage/burden)*BALANCE.power.efficiency.shortagePenaltyMultiplier);
+ const efficiency=1+powerProductivityModifier();
  s.bread+=s.ovens*BALANCE.oven.breadProductionPerSecond*efficiency*dt;
  const fed=consumeFood(dt);
  if(s.tax)s.money+=fed*BALANCE.worker.taxIncomePerSecond*dt;
  s.money=Math.max(0,s.money-s.workers*BALANCE.worker.upkeepPerSecond*dt);
- s.power=Math.max(0,s.power-s.workers*BALANCE.worker.populationPowerDrainPerSecond*dt);
- s.power+=(s.admins*BALANCE.administration.powerRecoveryPerSecond+(s.goods["発電機"]||0)*BALANCE.generator.powerRecoveryPerSecondPerUnit)*dt;
+ s.power=Math.min(100,Math.max(0,s.power-s.workers*BALANCE.worker.populationPowerDrainPerSecond*dt)+(s.admins*BALANCE.administration.powerRecoveryPerSecond+(s.goods["発電機"]||0)*BALANCE.generator.powerRecoveryPerSecondPerUnit)*dt);
  produceLabor(dt,efficiency);
  const machineBonus=1+(s.goods["蒸気機関"]||0)*BALANCE.mine.steamEngineMiningRateBonusPerUnit;
  const miningWorkers=s.labor.mining,requiredMiners=Math.max(1,activeMineCount()*BALANCE.labor.mineWorkersPerFullRate),mineLaborFactor=Math.min(1,miningWorkers/requiredMiners);
