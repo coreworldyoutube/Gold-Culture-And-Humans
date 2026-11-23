@@ -173,10 +173,8 @@ $("save").onclick=()=>save();
  debugModal.addEventListener("click",event=>{if(event.target===debugModal)debugModal.hidden=true;});
  $("debugUnlockText").onclick=()=>{
   debugClickCount++;
-  $("debugClickCount").textContent="クリック回数："+debugClickCount+" / 21";
   if(debugClickCount>=21){
    $("debugControls").hidden=false;
-   $("debugClickCount").textContent="デバッグモードを解放しました。";
    refreshDebugInputs();
   }
  };
